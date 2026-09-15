@@ -33,9 +33,12 @@ src/
     tokens.css           design tokens — mirrors the Figma variable collection
     app.css              everything else
 server/
-  index.js               Express: /api/health, /api/catalogue,
+  app.js                 Express routes, no listener: /api/health, /api/catalogue,
                          /api/campaign/:id/rows, POST /api/enquiry
+  index.js               listens on a port for local dev / a long-running host
   catalogue.data.js      server copy of the catalogue
+api/
+  index.js               Vercel serverless entry — re-exports server/app.js
 public/                  hero.mp4, jonas.jpg
 ```
 
@@ -80,7 +83,16 @@ dev needs no external dependency.
 
 ## Deploying
 
-The repo is linked to the Vercel project `site`. The current `vercel.json` was
-written for the old static page — for this build set the framework preset to
-Vite (build `npm run build`, output `dist`) and move `/api` to serverless
-functions, or host the Express server separately and point `/api` at it.
+Vercel, from this repo. `vercel.json` sets the Vite preset (build `npm run build`,
+output `dist`) and rewrites every `/api/*` path to the serverless function in
+`api/index.js`, which re-exports the Express app from `server/app.js`.
+
+That split is the whole trick: `server/app.js` declares the routes and attaches
+no listener, so the same app can be a serverless handler on Vercel and a
+long-running process locally via `server/index.js`.
+
+Set `GOOGLE_FORM_ACTION_URL` and the `GF_ENTRY_*` ids as project environment
+variables — the serverless function reads the same names as `.env`.
+
+Note the rate limit in `server/app.js` is per-instance in-memory, so on Vercel it
+resets on cold start and is not shared between concurrent instances.
