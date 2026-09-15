@@ -1,13 +1,15 @@
 import { useState } from "react";
 
-/* Placeholder content. Do not ship: the portrait is an unlicensed archival
-   photograph and the quote is sample copy, not an approved customer statement. */
+/* The photo is licensed (see CREDITS.md) and the attribution is real, but the
+   quote BODY is still copy I drafted, not a sentence Abhimanyu actually said.
+   That is why the sample-copy badge stays. Swap the body for his own words and
+   the badge comes off with it. */
 const QUOTES = [
   {
     body:
       "We stopped losing weeks to the hand-off. Designs go out on a Monday and come back as rows we can train on — including the ones that failed, which is the part we actually needed.",
-    name: "[ Name ]",
-    role: "[ Title ] · [ Organisation ]",
+    name: "Abhimanyu",
+    role: "Pharma student · Mextropic",
   },
 ];
 
