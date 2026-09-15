@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mextropic AI · Data infrastructure for AI-led drug discovery</title>
+<meta name="description" content="Mextropic runs the build-and-test half of your discovery loop — construct to assay to structured, ML-ready rows. Quoted in 24 hours, measured in 3–4 weeks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#191919; --ink2:#1D2D3D; --graphite:#4A5259; --muted:#6B6F73; --subtle:#9BA3A9;
+  --line:#DFE5E9; --line-strong:#C7D1D9;
+  --surface:#FFFFFF; --ground:#FAFAFA; --ground2:#EEF1F4;
+  --accent:#5980A6; --accent-soft:#7AA8D6; --accent-wash:#EAF0F6;
+  /* CTA / action colour — cyan-azure sampled from the hero footage's glassware
+     highlights. Complements the red neon so buttons pop against the video. */
+  --signal:#00B5D8; --signal-deep:#0A6E82; --on-signal:#0A1417;
+  --slate:#1D2D3D; --panel900:#11171D; --line-dark:#2B3D4E;
+  --on-dark:#FFFFFF; --on-dark2:#AEBCC8; --on-dark3:#7E8D9B;
+  --sans:"DM Sans",system-ui,-apple-system,sans-serif;
+  --serif:"Instrument Serif",Georgia,serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-pill:999px;
+  --max:1200px;
+  --shadow-card:0 1px 2px rgba(25,25,25,.05), 0 10px 28px -8px rgba(25,25,25,.07);
+  --shadow-lift:0 20px 52px -14px rgba(25,25,25,.18);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--surface);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+img,svg{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+h1,h2,h3,p{margin:0}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+.mono{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:500}
+.it{font-family:var(--serif);font-style:italic;font-weight:400}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--sans);font-weight:500;font-size:15px;
+  padding:14px 24px;border-radius:var(--r-pill);border:1px solid transparent;cursor:pointer;background:none;
+  transition:transform .18s cubic-bezier(.2,.7,.2,1), box-shadow .18s ease, background .18s ease, border-color .18s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn-signal{background:var(--signal);color:var(--on-signal)}
+.btn-signal:hover{box-shadow:0 8px 24px -6px rgba(237,197,49,.55)}
+.btn-ghost-dark{color:var(--on-dark);border-color:rgba(255,255,255,.32)}
+.btn-ghost-dark:hover{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.6)}
+.btn-ghost{color:var(--ink);border-color:var(--line);background:var(--surface)}
+.btn-ghost:hover{border-color:var(--muted)}
+
+/* ---------- hero ---------- */
+/* z-index lifts the hero's stacking context above the later sections, so the
+   fixed nav inside it keeps painting on top once you scroll past. */
+.hero{position:relative;z-index:50;min-height:820px;display:flex;flex-direction:column;justify-content:flex-end;
+  background:var(--panel900);isolation:isolate}
+.hero-media{overflow:hidden}
+.hero-media{position:absolute;inset:0;z-index:-2;overflow:hidden;background:#0C1218}
+.hero-media img,.hero-media video{width:100%;height:100%;object-fit:cover;object-position:50% 55%}
+/* the footage carries its own motion, so ken-burns is only for the still fallback */
+.hero-media img{object-position:50% 64%;animation:kenburns 26s ease-in-out infinite alternate}
+@keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.07)}}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(90deg,rgba(12,18,24,.95) 0%,rgba(12,18,24,.72) 48%,rgba(12,18,24,.38) 100%)}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56%;z-index:-1;
+  background:linear-gradient(180deg,rgba(12,18,24,0) 0%,rgba(12,18,24,.92) 100%)}
+
+.nav{position:fixed;top:20px;left:0;right:0;z-index:100;padding:0 24px;
+  transition:top .3s cubic-bezier(.2,.7,.2,1)}
+.nav-inner{max-width:940px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;
+  gap:24px;padding:10px 10px 10px 20px;border-radius:var(--r-pill);
+  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.20);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
+  transition:background .3s ease, border-color .3s ease, box-shadow .3s ease}
+/* once past the hero the pill goes solid so it stays legible on light sections */
+.nav-inner.solid{background:rgba(255,255,255,.88);border-color:var(--line);box-shadow:0 6px 24px -8px rgba(25,25,25,.18)}
+.nav-inner.solid .brand{color:var(--ink)}
+.nav-inner.solid .nav-links a{color:var(--graphite)}
+.nav-inner.solid .nav-links a:hover{color:var(--ink)}
+.nav-inner.solid .navburger span{background:var(--ink)}
+.nav-left{display:flex;align-items:center;gap:26px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:500;font-size:15px;color:var(--on-dark)}
+.mark{width:26px;height:26px;border-radius:var(--r-sm);background:var(--signal);color:var(--on-signal);
+  display:grid;place-items:center;font-weight:500;font-size:15px}
+.nav-links{display:flex;gap:22px;font-size:14px;font-weight:500;color:var(--on-dark2)}
+.nav-links a{transition:color .15s ease}
+.nav-links a:hover{color:var(--on-dark)}
+.navburger{display:none;background:none;border:0;padding:8px;cursor:pointer}
+.navburger span{display:block;width:20px;height:2px;background:var(--on-dark);margin:4px 0;border-radius:2px}
+
+.hero-copy{position:relative;z-index:2;padding-bottom:150px}
+.hero h1{font-size:clamp(40px,5.3vw,76px);line-height:1.03;letter-spacing:-.035em;font-weight:500;color:var(--on-dark);max-width:15ch}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px}
+.plate-note{position:absolute;right:24px;bottom:64px;z-index:2;color:var(--on-dark3);
+  border:1px solid rgba(255,255,255,.22);border-radius:var(--r-sm);padding:5px 10px}
+
+/* ---------- strip ---------- */
+.strip{border-bottom:1px solid var(--line);background:var(--surface)}
+.strip-inner{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0;padding:26px 0}
+.strip-inner span{font-size:15px;font-weight:500;color:var(--graphite)}
+.strip-inner i{width:3px;height:3px;border-radius:50%;background:var(--subtle);margin:0 20px;flex:none}
+
+/* ---------- sections ---------- */
+section{position:relative}
+.sec{padding:112px 0}
+.sec-ground{background:var(--ground)}
+.sec-tint{background:var(--ground2)}
+.sec-white{background:var(--surface)}
+.head-centre{text-align:center;display:flex;flex-direction:column;align-items:center}
+.eyebrow{display:flex;align-items:center;gap:12px;color:var(--muted)}
+.eyebrow b{display:block;width:28px;height:1px;background:var(--line-strong)}
+h2{font-size:clamp(32px,4.4vw,64px);line-height:1.06;letter-spacing:-.035em;font-weight:500}
+h2 .it{font-size:1.06em;letter-spacing:-.02em}
+.lead{font-size:clamp(18px,1.7vw,24px);line-height:1.42;letter-spacing:-.01em;color:var(--graphite)}
+.lead-lg{font-size:clamp(20px,2.1vw,30px);line-height:1.34;letter-spacing:-.015em;color:var(--graphite)}
+
+/* ---------- data table ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-card);overflow:hidden}
+.table-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:var(--ground2);border-bottom:1px solid var(--line)}
+.table-head .path{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink)}
+.live{display:inline-flex;align-items:center;gap:8px;padding:6px 11px;border-radius:var(--r-pill);background:var(--accent-wash);color:var(--accent)}
+.live i{width:6px;height:6px;border-radius:50%;background:var(--signal);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.82)}}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+thead th{text-align:left;padding:12px 0;color:var(--subtle);font-weight:500;font-size:11px;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--line)}
+tbody td{padding:14px 0;color:var(--ink2);border-bottom:1px solid var(--line)}
+tbody tr:nth-child(even){background:var(--ground2)}
+th:first-child,td:first-child{padding-left:24px}
+th:last-child,td:last-child{padding-right:24px}
+.flag{display:inline-block;padding:3px 8px;border-radius:var(--r-sm);background:var(--signal);color:var(--on-signal);font-weight:500}
+.dim{color:var(--subtle)}
+.table-foot{padding:16px 24px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+/* ---------- pills + wide product cards ---------- */
+.pill{display:inline-block;padding:9px 16px;border-radius:var(--r-sm);background:var(--accent-wash);color:var(--accent)}
+.pill.warm{color:var(--signal-deep)}
+.pcards{display:flex;flex-direction:column;gap:20px}
+.pcard{display:grid;grid-template-columns:1fr 560px;min-height:340px;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-card);overflow:hidden;
+  transition:transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease}
+.pcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-lift)}
+.pcard-body{padding:44px 40px 40px 44px;display:flex;flex-direction:column;justify-content:space-between}
+.pcard h3{font-size:clamp(24px,2.5vw,34px);line-height:1.18;letter-spacing:-.025em;font-weight:500;margin:26px 0 14px}
+.pcard p{font-size:clamp(16px,1.5vw,24px);line-height:1.42;letter-spacing:-.01em;color:var(--graphite)}
+.pcard .meta{color:var(--subtle);margin-top:24px}
+.pcard-visual{background:var(--ground2);display:grid;place-items:center;padding:40px}
+.panel{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+.panel-row{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--line);font-size:15px}
+.panel-row:last-child{border-bottom:0}
+.panel-row .val{margin-left:auto;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--graphite)}
+.tick{width:18px;height:18px;border-radius:50%;background:var(--accent);display:grid;place-items:center;flex:none}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;background:var(--ground);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px;font-weight:500}
+.chip-ok{padding:4px 9px;border-radius:var(--r-pill);background:var(--accent-wash);color:var(--accent)}
+.wells{display:grid;grid-template-columns:repeat(16,1fr);gap:6px;margin:16px 0 18px}
+.wells i{aspect-ratio:1;border-radius:50%;background:var(--accent);animation:wellin .4s ease both}
+.wells i.c{background:var(--signal)}
+.wells i.f{background:var(--line-strong)}
+@keyframes wellin{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+.legend{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend b{width:9px;height:9px;border-radius:50%;display:block}
+pre.code{margin:0;background:var(--slate);border-radius:var(--r-md);padding:18px 20px;
+  font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--on-dark2);overflow:auto}
+pre.code .k{color:var(--signal);font-weight:500}
+pre.code .s{color:var(--accent-soft);font-weight:500}
+pre.code .w{color:var(--on-dark)}
+
+/* ---------- loop ---------- */
+.loop-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;margin-top:72px}
+.orbit{width:100%;max-width:460px;margin:0 auto;aspect-ratio:1;position:relative}
+.orbit svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.orbit .track{fill:none;stroke:var(--line-strong);stroke-width:1;stroke-dasharray:2 8}
+.orbit .arc{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;
+  stroke-dasharray:1000;stroke-dashoffset:1000}
+.in-view .orbit .arc{animation:draw 1.8s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes draw{to{stroke-dashoffset:250}}
+.orbit-node{position:absolute;transform:translate(-50%,-50%);font-size:15px;font-weight:500;color:var(--muted);white-space:nowrap}
+.orbit-node.on{color:var(--ink)}
+.orbit-centre{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:176px;height:176px;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-card);display:grid;place-items:center}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:28px}
+.step{display:inline-flex;align-items:center;gap:8px;padding:7px 14px 7px 8px;border-radius:var(--r-pill);
+  background:transparent;border:0;cursor:pointer;font-family:var(--sans);font-size:14px;font-weight:500;color:var(--muted);transition:background .2s ease,color .2s ease}
+.step b{width:20px;height:20px;border-radius:50%;background:var(--line);color:var(--muted);
+  display:grid;place-items:center;font-family:var(--mono);font-size:12px;transition:background .2s ease,color .2s ease}
+.step[aria-selected="true"]{background:var(--accent-wash);color:var(--ink)}
+.step[aria-selected="true"] b{background:var(--accent);color:#fff}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.chips span{padding:6px 11px;border:1px solid var(--line);border-radius:var(--r-pill);background:var(--surface);color:var(--muted)}
+
+/* ---------- catalogue carousel ---------- */
+.rail-head{display:flex;justify-content:space-between;align-items:flex-end;gap:80px;flex-wrap:wrap}
+.rail-ctrls{display:flex;gap:10px;margin-top:26px}
+.rail-ctrls button{width:44px;height:44px;border-radius:var(--r-pill);border:1px solid var(--line);
+  background:var(--surface);display:grid;place-items:center;cursor:pointer;transition:background .2s ease,border-color .2s ease}
+.rail-ctrls button:hover{background:var(--ink);border-color:var(--ink)}
+.rail-ctrls button:hover svg path{stroke:#fff}
+.rails{margin-top:52px;display:flex;flex-direction:column;gap:18px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.rail-wrap{overflow:hidden}
+.rail{display:flex;gap:18px;width:max-content;will-change:transform;
+  animation:marquee var(--dur,64s) linear infinite}
+.rail.rev{animation-direction:reverse}
+@keyframes marquee{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+.rail-wrap:hover .rail,.rail-wrap:focus-within .rail{animation-play-state:paused}
+.rail.stopped{animation-play-state:paused}
+.ccard{position:relative;width:300px;height:250px;border-radius:var(--r-lg);overflow:hidden;flex:none;
+  box-shadow:0 10px 26px -8px rgba(25,25,25,.14);transition:transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease}
+.ccard:hover{transform:translateY(-6px) scale(1.015);box-shadow:0 22px 44px -12px rgba(25,25,25,.28)}
+.ccard .motif{position:absolute;inset:0;opacity:.30;transition:opacity .3s ease}
+.ccard:hover .motif{opacity:.46}
+.ccard .scrim{position:absolute;left:0;right:0;bottom:0;height:150px;
+  background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.62))}
+.ccard .glyph{position:absolute;top:16px;left:16px;width:28px;height:28px;border-radius:8px;
+  background:rgba(255,255,255,.20);display:grid;place-items:center}
+.ccard .cbody{position:absolute;left:16px;right:16px;bottom:16px;color:#fff}
+.ccard h4{margin:0;font-size:19px;font-weight:500;letter-spacing:-.02em;line-height:1.25}
+.ccard .cmeta{color:rgba(255,255,255,.72);margin-top:5px}
+.ccard .cbtns{display:flex;gap:8px;margin-top:12px}
+.ccard .cbtns span{padding:6px 11px;border-radius:var(--r-pill);background:rgba(255,255,255,.16);color:#fff;
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
+.ccard .cbtns span:first-child{background:rgba(255,255,255,.92);color:var(--ink)}
+
+/* ---------- testimonial ---------- */
+.tcard{display:grid;grid-template-columns:1fr 540px;background:var(--slate);border-radius:var(--r-lg);
+  overflow:hidden;box-shadow:var(--shadow-lift);min-height:470px;margin-top:48px}
+.tcard .quote{padding:44px 40px 40px 48px;display:flex;flex-direction:column;justify-content:space-between;color:var(--on-dark)}
+.tcard blockquote{margin:26px 0 0;font-size:clamp(19px,2vw,26px);line-height:1.4;letter-spacing:-.02em;font-weight:500}
+.tcard .who{margin-top:28px}
+.tcard .who b{display:block;font-size:19px;font-weight:500}
+.tcard .who span{color:var(--on-dark2)}
+.tcard .logo{margin-top:26px;width:150px;height:40px;border:1px dashed var(--line-dark);border-radius:var(--r-sm);
+  display:grid;place-items:center;color:var(--on-dark3)}
+.tdots{display:flex;gap:8px;margin-top:26px}
+.tdots i{width:7px;height:7px;border-radius:50%;background:var(--line-dark);cursor:pointer}
+.tdots i.on{background:var(--signal)}
+.tphoto{background:var(--slate);overflow:hidden}
+.tphoto img{width:100%;height:100%;object-fit:cover;object-position:50% 34%}
+.ph{display:inline-block;padding:6px 10px;border:1px dashed var(--signal);border-radius:var(--r-sm);color:var(--signal)}
+
+/* ---------- enquiry ---------- */
+.form-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-card);overflow:hidden;margin-top:52px}
+.form-fields{padding:34px 36px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.field{display:flex;flex-direction:column;gap:9px;margin-bottom:20px}
+.field label{color:var(--muted)}
+.field input,.field select,.field textarea{font-family:var(--sans);font-size:15px;color:var(--ink);
+  padding:13px 14px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface);width:100%;
+  transition:border-color .15s ease, box-shadow .15s ease}
+.field textarea{resize:vertical;min-height:96px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(89,128,166,.22)}
+.form-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  padding:22px 36px;background:var(--ground);border-top:1px solid var(--line)}
+.form-bar b{display:block;font-size:19px;font-weight:500}
+
+/* ---------- footer ---------- */
+footer{background:var(--ground);border-top:1px solid var(--line);padding:72px 0 40px}
+.foot-cols{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px}
+.foot-cols h5{margin:0 0 20px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--subtle);font-weight:500}
+.foot-cols a{display:block;margin-bottom:12px;color:var(--graphite);font-size:15px;transition:color .15s ease}
+.foot-cols a:hover{color:var(--ink)}
+.foot-legal{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  border-top:1px solid var(--line);margin-top:56px;padding-top:24px;font-size:13px;color:var(--muted)}
+.foot-legal nav{display:flex;gap:24px}
+
+/* ---------- reveal ---------- */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in-view{opacity:1;transform:none}
+
+/* ---------- responsive ---------- */
+@media (max-width:1080px){
+  .pcard{grid-template-columns:1fr}
+  .pcard-visual{order:-1;padding:28px}
+  .loop-grid{grid-template-columns:1fr;gap:48px}
+  .tcard{grid-template-columns:1fr}
+  .tphoto{min-height:360px}
+  .foot-cols{grid-template-columns:1fr 1fr}
+}
+@media (max-width:720px){
+  .sec{padding:72px 0}
+  .nav-links{display:none}
+  .navburger{display:block}
+  .nav-inner.open .nav-links{display:flex;position:absolute;top:64px;left:12px;right:12px;flex-direction:column;
+    gap:14px;padding:20px;background:rgba(17,23,29,.96);border-radius:var(--r-md);backdrop-filter:blur(20px)}
+  .hero{min-height:660px}
+  .hero-copy{padding-bottom:90px}
+  .grid2{grid-template-columns:1fr}
+  .strip-inner i{margin:0 12px}
+  .strip-inner span{font-size:13px}
+  .foot-cols{grid-template-columns:1fr}
+  table{font-size:11px}
+  th:first-child,td:first-child{padding-left:14px}
+  th:last-child,td:last-child{padding-right:14px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  .hero-media img{animation:none}
+  .rail{animation:none}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="hero-media">
+    <video autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+      <source src="hero.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-inner" id="nav">
+      <div class="nav-left">
+        <a class="brand" href="#"><span class="mark">M</span> Mextropic AI</a>
+        <div class="nav-links">
+          <a href="#platform">Platform</a>
+          <a href="#catalogue">Catalogue</a>
+          <a href="#data">Data</a>
+          <a href="#about">About</a>
+        </div>
+      </div>
+      <button class="navburger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      <a class="btn btn-signal" href="#enquiry">Configure a campaign</a>
+    </div>
+  </nav>
+
+  <div class="wrap hero-copy">
+    <h1 class="reveal">Experimental ground truth,<br>at model speed.</h1>
+    <div class="hero-ctas reveal">
+      <a class="btn btn-signal" href="#platform">Explore the platform</a>
+      <a class="btn btn-ghost-dark" href="#enquiry">Talk to a scientist</a>
+    </div>
+  </div>
+  <span class="plate-note mono">◼ Video plate — supply lab footage</span>
+</header>
+
+<!-- ================= CAPABILITIES STRIP ================= -->
+<div class="strip">
+  <div class="wrap strip-inner">
+    <span>Expression &amp; production</span><i></i>
+    <span>Binding kinetics</span><i></i>
+    <span>Biophysical developability</span><i></i>
+    <span>Cell-based function</span><i></i>
+    <span>Bioprocess</span><i></i>
+    <span>ML-ready data contract</span>
+  </div>
+</div>
+
+<!-- ================= ML-READY ================= -->
+<section class="sec sec-ground" id="data">
+  <div class="wrap">
+    <div class="head-centre reveal">
+      <span class="eyebrow mono"><b></b>The data<b></b></span>
+      <h2 style="margin-top:22px">ML-ready from the <span class="it">first row.</span></h2>
+      <p class="lead" style="max-width:760px;margin-top:20px">Structured, joinable rows — not a report. Values, censoring flags, QC status and run covariates, streamed via API as each run clears QC.</p>
+    </div>
+
+    <div class="card reveal" style="margin-top:52px">
+      <div class="table-head">
+        <span class="path">campaign / MXQ-2026-0417 / results.parquet</span>
+        <span class="live mono"><i></i>Streaming via API</span>
+      </div>
+      <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>design_id</th><th>assay</th><th>value</th><th>censor</th><th>flag</th><th>plate</th><th>run_date</th><th>instrument</th></tr></thead>
+        <tbody>
+          <tr><td>DSN-00412</td><td>SPR_KD</td><td>4.2e-10</td><td class="dim">—</td><td class="dim">OK</td><td>P07</td><td>2026-03-11</td><td>SPR-02</td></tr>
+          <tr><td>DSN-00413</td><td>SPR_KD</td><td>1.0e-06</td><td><span class="flag">&gt;</span></td><td><span class="flag">LOD_UPPER</span></td><td>P07</td><td>2026-03-11</td><td>SPR-02</td></tr>
+          <tr><td>DSN-00414</td><td>SPR_KD</td><td class="dim">—</td><td class="dim">—</td><td><span class="flag">EXPR_FAIL</span></td><td>P07</td><td>2026-03-11</td><td class="dim">—</td></tr>
+          <tr><td>DSN-00415</td><td>NANODSF_TM</td><td>71.4</td><td class="dim">—</td><td class="dim">OK</td><td>P07</td><td>2026-03-12</td><td>DSF-01</td></tr>
+          <tr><td>DSN-00415</td><td>ACSINS_DL</td><td>8.3</td><td class="dim">—</td><td class="dim">OK</td><td>P08</td><td>2026-03-12</td><td>PLT-04</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="table-foot"><span>Failures returned. Limits marked. Covariates exposed.</span><span class="mono">Joinable on design_id</span></div>
+    </div>
+
+    <div id="platform" style="height:76px"></div>
+
+    <span class="pill mono reveal">Build &amp; test</span>
+    <div class="pcards" style="margin-top:22px">
+
+      <article class="pcard reveal">
+        <div class="pcard-body">
+          <div>
+            <svg width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M12 3v8.2L5.6 22.6A2 2 0 0 0 7.3 25.6h15.4a2 2 0 0 0 1.7-3L18 11.2V3" stroke="#191919" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.5 3h9M9.6 18.4h10.8" stroke="#191919" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <h3>Construct to QC release, in one cycle</h3>
+            <p>Construct design, transient expression in HEK293, CHO or <i>E. coli</i>, affinity purification and release testing — included in every campaign, before a single assay runs.</p>
+          </div>
+          <span class="meta mono">Included in every campaign</span>
+        </div>
+        <div class="pcard-visual">
+          <div class="panel">
+            <div class="panel-head"><span>DSN-00412 / release</span><span class="chip-ok mono">Released</span></div>
+            <div class="panel-row"><span class="tick"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.4 4.7 3.5 6.7 7.6 2.3" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Titer quantification<span class="val">1.42 g/L</span></div>
+            <div class="panel-row"><span class="tick"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.4 4.7 3.5 6.7 7.6 2.3" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Purity by SEC-HPLC<span class="val">98.6 %</span></div>
+            <div class="panel-row"><span class="tick"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.4 4.7 3.5 6.7 7.6 2.3" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Integrity by CE-SDS<span class="val">97.1 %</span></div>
+            <div class="panel-row"><span class="tick"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.4 4.7 3.5 6.7 7.6 2.3" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Intact mass by LC-MS<span class="val">148,214 Da</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="pcard reveal">
+        <div class="pcard-body">
+          <div>
+            <svg width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M4 25V6M4 25h22" stroke="#191919" stroke-width="1.6" stroke-linecap="round"/><path d="m8 20 5-6 4 3 7-9" stroke="#191919" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24" cy="8" r="2" fill="#191919"/></svg>
+            <h3>Measured on named instruments</h3>
+            <p>Kinetics, developability, cell-based function and bioprocess — every value carries the plate, the run date and the instrument it came from.</p>
+          </div>
+          <span class="meta mono">SPR · BLI · nanoDSF · AC-SINS · icIEF</span>
+        </div>
+        <div class="pcard-visual">
+          <div class="panel">
+            <div class="panel-head"><span>Instrument</span><span>Runs &nbsp;&nbsp; Last run</span></div>
+            <div class="panel-row"><div><b style="font-family:var(--mono);font-size:12px">SPR-02</b><div style="font-size:13px;color:var(--muted)">Biacore 8K</div></div><span class="val">14&nbsp;&nbsp;&nbsp;2026-03-11</span></div>
+            <div class="panel-row"><div><b style="font-family:var(--mono);font-size:12px">DSF-01</b><div style="font-size:13px;color:var(--muted)">Prometheus NT.48</div></div><span class="val">6&nbsp;&nbsp;&nbsp;2026-03-12</span></div>
+            <div class="panel-row"><div><b style="font-family:var(--mono);font-size:12px">PLT-04</b><div style="font-size:13px;color:var(--muted)">AC-SINS plate reader</div></div><span class="val">9&nbsp;&nbsp;&nbsp;2026-03-12</span></div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <div style="height:44px"></div>
+    <span class="pill warm mono reveal">The data contract</span>
+    <div class="pcards" style="margin-top:22px">
+
+      <article class="pcard reveal">
+        <div class="pcard-body">
+          <div>
+            <svg width="30" height="30" viewBox="0 0 30 30" fill="none"><rect x="4" y="4" width="9" height="9" rx="1.5" stroke="#191919" stroke-width="1.6"/><rect x="17" y="4" width="9" height="9" rx="1.5" stroke="#191919" stroke-width="1.6"/><rect x="4" y="17" width="9" height="9" rx="1.5" stroke="#191919" stroke-width="1.6"/><rect x="17" y="17" width="9" height="9" rx="1.5" stroke="#191919" stroke-width="1.6"/></svg>
+            <h3>Every design accounted for</h3>
+            <p>Values that hit the limit of detection are censored, not deleted. Constructs that never expressed come back as labelled failures. Nothing is quietly dropped.</p>
+          </div>
+          <span class="meta mono">96 of 96 designs returned</span>
+        </div>
+        <div class="pcard-visual">
+          <div class="panel" style="padding:20px 22px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="mono" style="color:var(--muted)">Campaign MXQ-2026-0417</span>
+              <span style="font-family:var(--mono);font-size:12px;font-weight:500">96 / 96</span>
+            </div>
+            <div class="wells" id="wells"></div>
+            <div class="legend mono">
+              <span><b style="background:var(--accent)"></b>71 measured</span>
+              <span><b style="background:var(--signal)"></b>18 censored</span>
+              <span><b style="background:var(--line-strong)"></b>7 expr_fail</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="pcard reveal">
+        <div class="pcard-body">
+          <div>
+            <svg width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M11 9 5 15l6 6M19 9l6 6-6 6" stroke="#191919" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 6 13.5 24" stroke="#191919" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <h3>Streamed as it clears QC</h3>
+            <p>You do not wait for a final report. Rows land in your model as each run passes release, joinable on <code style="font-family:var(--mono);font-size:.86em">design_id</code> against the designs you sent.</p>
+          </div>
+          <span class="meta mono">REST · Parquet · Webhook</span>
+        </div>
+        <div class="pcard-visual">
+<pre class="code"><span class="k">GET</span> <span class="w">/v1/campaigns/MXQ-2026-0417/rows</span>
+    ?since=2026-03-11T00:00:00Z
+
+<span class="s">200 OK</span>   application/x-parquet
+
+{ <span class="w">"design_id"</span>: "DSN-00413",
+  <span class="w">"assay"</span>:     "SPR_KD",
+  <span class="w">"value"</span>:     1.0e-06,
+  <span class="k">"censor"</span>:    "&gt;",
+  <span class="k">"flag"</span>:      "LOD_UPPER" }</pre>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= LOOP ================= -->
+<section class="sec sec-white">
+  <div class="wrap">
+    <div class="head-centre reveal">
+      <h2>Validate your designs in <span class="it">3–4 weeks.</span></h2>
+      <p class="lead" style="max-width:720px;margin-top:18px">The lab should not be the slowest step in your loop. Models generate candidates faster than anyone can evaluate them — we run the other half.</p>
+    </div>
+
+    <div class="loop-grid reveal">
+      <div class="orbit" id="orbit">
+        <svg viewBox="0 0 460 460" aria-hidden="true">
+          <circle class="track" cx="230" cy="230" r="185"/>
+          <circle class="arc" cx="230" cy="230" r="185" transform="rotate(-90 230 230)"/>
+        </svg>
+        <div class="orbit-centre">
+          <svg width="92" height="92" viewBox="0 0 92 92" fill="none" aria-hidden="true">
+            <path d="M32 9h28M37 17h18M37 46h18M37 75h18M32 83h28" stroke="#9BA3A9" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M30 8C68 28 68 64 30 84" stroke="#191919" stroke-width="1.6" fill="none"/>
+            <path d="M62 8C24 28 24 64 62 84" stroke="#191919" stroke-width="1.6" fill="none"/>
+          </svg>
+        </div>
+        <span class="orbit-node on" style="left:50%;top:2%">Design</span>
+        <span class="orbit-node on" style="left:96%;top:50%">Build</span>
+        <span class="orbit-node" style="left:50%;top:98%">Test</span>
+        <span class="orbit-node" style="left:4%;top:50%">Learn</span>
+      </div>
+
+      <div>
+        <div class="steps" role="tablist">
+          <button class="step" role="tab" aria-selected="false" data-step="0"><b>1</b>Design</button>
+          <button class="step" role="tab" aria-selected="true"  data-step="1"><b>2</b>Build</button>
+          <button class="step" role="tab" aria-selected="false" data-step="2"><b>3</b>Test</button>
+          <button class="step" role="tab" aria-selected="false" data-step="3"><b>4</b>Learn</button>
+        </div>
+        <h3 id="stepTitle" style="font-size:26px;font-weight:500;letter-spacing:-.02em">Build</h3>
+        <p id="stepBody" class="lead" style="margin-top:12px;font-size:18px">Construct design, expression in HEK293, CHO or <i>E. coli</i>, affinity purification and QC release — included in every campaign, before a single assay runs.</p>
+        <div class="chips mono" id="stepChips"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CATALOGUE CAROUSEL ================= -->
+<section class="sec sec-ground" id="catalogue" style="overflow:hidden">
+  <div class="wrap rail-head reveal">
+    <h2>Unlock breakthroughs<br>at scale.</h2>
+    <div style="max-width:430px">
+      <p class="lead" style="font-size:18px">From expression and binding through ADMET, proteomics and genomics. 79 assays across 14 scientific domains — configured as one campaign, returned as one schema.</p>
+      <div class="rail-ctrls">
+        <button id="railPrev" aria-label="Previous"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 4.5 6.5 9 11 13.5" stroke="#4A5259" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button id="railNext" aria-label="Next"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 4.5 11.5 9 7 13.5" stroke="#4A5259" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="rails">
+    <div class="rail-wrap"><div class="rail" id="railA" style="--dur:72s"></div></div>
+    <div class="rail-wrap"><div class="rail rev" id="railB" style="--dur:86s"></div></div>
+  </div>
+</section>
+
+<!-- ================= TESTIMONIAL ================= -->
+<section class="sec sec-white">
+  <div class="wrap">
+    <div class="rail-head reveal">
+      <h2>Why research teams<br>work with Mextropic.</h2>
+      <p class="lead" style="max-width:400px;font-size:18px">Every campaign runs on the same contract: a scoped quote in a day, named instruments on every row, and measured data — failures included — streamed back as it clears QC.</p>
+    </div>
+
+    <div class="tcard reveal">
+      <div class="quote">
+        <div>
+          <span class="ph mono">◆ Sample copy — replace with a real, approved quote</span>
+          <blockquote>“We stopped losing weeks to the hand-off. Designs go out on a Monday and come back as rows we can train on — including the ones that failed, which is the part we actually needed.”</blockquote>
+          <div class="who"><b>[ Name ]</b><span>[ Title ] · [ Organisation ]</span></div>
+        </div>
+        <div>
+          <div class="logo mono">Client logo</div>
+          <div class="tdots"><i class="on"></i><i></i><i></i></div>
+        </div>
+      </div>
+      <div class="tphoto"><img src="jonas.jpg" alt="Scientist at a laboratory bench"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ENQUIRY ================= -->
+<section class="sec sec-tint" id="enquiry">
+  <div class="wrap">
+    <div class="head-centre reveal">
+      <span class="eyebrow mono"><b></b>Get in touch<b></b></span>
+      <h2 style="margin-top:20px">Send an enquiry. <span class="it">We reply in a day.</span></h2>
+      <p class="lead" style="max-width:620px;margin-top:18px">Send a specification, or just describe the problem. A scientist reads every message — by email first, and a call only if it is genuinely needed.</p>
+    </div>
+
+    <!-- Replace action with your Google Form's formResponse URL, and each name= with its entry.XXXXXX id -->
+    <form class="form-card reveal" id="enquiryForm" action="REPLACE_WITH_GOOGLE_FORM_ACTION_URL" method="POST" target="hiddenFrame">
+      <div class="form-fields">
+        <span class="ph mono" style="margin-bottom:26px">◆ Embed / link Google Form — URL to be supplied</span>
+        <div class="grid2">
+          <div class="field"><label class="mono" for="f-name">Full name</label><input id="f-name" name="entry.NAME" type="text" placeholder="Dr Jane Okafor" required></div>
+          <div class="field"><label class="mono" for="f-email">Work email</label><input id="f-email" name="entry.EMAIL" type="email" placeholder="jane@institution.org" required></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label class="mono" for="f-org">Organisation</label><input id="f-org" name="entry.ORG" type="text" placeholder="Institution or company"></div>
+          <div class="field"><label class="mono" for="f-area">Research area</label>
+            <select id="f-area" name="entry.AREA">
+              <option>Antibody engineering</option><option>Small molecule</option><option>Enzyme / protein engineering</option>
+              <option>Genomics</option><option>Cell biology</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label class="mono" for="f-msg">What are you looking to solve?</label>
+          <textarea id="f-msg" name="entry.MESSAGE" placeholder="Target, prior data, constraints — anything that shapes the answer."></textarea>
+        </div>
+      </div>
+      <div class="form-bar">
+        <div><span class="mono" style="color:var(--subtle)">A scientist reads every message</span><b>Reply within 24 hours</b></div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <a class="mono" style="color:var(--muted)" href="mailto:pranav@mextropic.com">pranav@mextropic.com</a>
+          <button class="btn btn-signal" type="submit">Send enquiry →</button>
+        </div>
+      </div>
+    </form>
+    <iframe name="hiddenFrame" style="display:none" title="form target"></iframe>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer id="about">
+  <div class="wrap">
+    <div class="foot-cols">
+      <div>
+        <a class="brand" style="color:var(--ink)" href="#"><span class="mark">M</span> Mextropic AI</a>
+        <p style="margin-top:16px;color:var(--graphite);max-width:320px">Data infrastructure for AI-led drug discovery. We run the build-and-test half of your loop and return structured, ML-ready rows.</p>
+      </div>
+      <div><h5>Platform</h5><a href="#">How it works</a><a href="#catalogue">Assay catalogue</a><a href="#data">Data schema</a><a href="#enquiry">Start a campaign</a></div>
+      <div><h5>Company</h5><a href="#">About</a><a href="#">Blog</a><a href="#">Careers</a><a href="#enquiry">Contact</a></div>
+      <div><h5>Connect</h5><a href="#">LinkedIn</a><a href="#">X</a></div>
+    </div>
+    <div class="foot-legal"><span>© 2026 Mextropic AI</span><nav><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a></nav></div>
+  </div>
+</footer>
+
+<script>
+/* ---------------- catalogue data — from the full capabilities catalogue ---------------- */
+/* card gradient families — cool steel plus one crimson drawn from the hero footage's neon */
+const FAM = [["#1D2D3D","#5980A6"],["#5980A6","#7AA8D6"],["#5E1F2B","#C4384A"],["#4A5259","#8A95A3"],["#2C4056","#6E93B8"]];
+const W = 300, H = 250;
+
+const motif = {
+  helix(){let a="",b="";for(let i=0;i<60;i++){const t=i/59,x=t*W,y=H/2+40*Math.sin(t*6);
+    a+=(i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)+" ";b+=(i?"L":"M")+x.toFixed(1)+" "+(H/2-40*Math.sin(t*6)).toFixed(1)+" ";}
+    return `<path d="${a}" stroke="#fff" stroke-width="2" fill="none"/><path d="${b}" stroke="#fff" stroke-width="2" fill="none"/>`;},
+  curve(){let d="M0 "+(H-40);for(let i=1;i<=48;i++){const t=i/48,x=t*W,
+    y=H-40-(t<.5?120*(1-Math.exp(-t*8)):120*(1-Math.exp(-4))*Math.exp(-(t-.5)*2.4));d+=" L"+x.toFixed(1)+" "+y.toFixed(1);}
+    return `<path d="${d}" stroke="#fff" stroke-width="2.4" fill="none"/>`;},
+  sigmoid(){let d="M0 "+(H-40);for(let i=1;i<=48;i++){const t=i/48,x=t*W,y=H-40-120/(1+Math.exp(-(t-.5)*12));d+=" L"+x.toFixed(1)+" "+y.toFixed(1);}
+    return `<path d="${d}" stroke="#fff" stroke-width="2.4" fill="none"/>`;},
+  wells(){let s="";for(let r=0;r<6;r++)for(let c=0;c<14;c++)
+    s+=`<circle cx="${(14+c*21).toFixed(1)}" cy="${(40+r*32).toFixed(1)}" r="6" fill="#fff" opacity="${((r*14+c)%7===0)?.95:.35}"/>`;return s;},
+  bars(n,seed){let s="";for(let i=0;i<n;i++){const h=16+Math.abs(Math.sin((i+1)*seed))*140;
+    s+=`<rect x="${(8+i*((W-16)/n)).toFixed(1)}" y="${(H-24-h).toFixed(1)}" width="${(((W-16)/n)-3).toFixed(1)}" height="${h.toFixed(1)}" fill="#fff" opacity="${i%5===2?.95:.4}"/>`;}return s;},
+  lattice(){let s="";for(let i=0;i<8;i++)for(let j=0;j<5;j++){const x=18+i*38,y=34+j*42;
+    if(i<7)s+=`<path d="M${x} ${y}H${x+38}" stroke="#fff" stroke-width="1.2" opacity=".45"/>`;
+    if(j<4)s+=`<path d="M${x} ${y}V${y+42}" stroke="#fff" stroke-width="1.2" opacity=".45"/>`;
+    s+=`<circle cx="${x}" cy="${y}" r="3.6" fill="#fff" opacity="${((i+j)%4===0)?.95:.5}"/>`;}return s;},
+  graph(){const P=[[54,64],[130,40],[212,74],[264,48],[86,150],[170,168],[248,142]],E=[[0,1],[1,2],[2,3],[0,4],[4,5],[5,6],[2,5],[1,4]];
+    let s="";E.forEach(([a,b])=>s+=`<path d="M${P[a][0]} ${P[a][1]}L${P[b][0]} ${P[b][1]}" stroke="#fff" stroke-width="1.4" opacity=".5"/>`);
+    P.forEach((p,i)=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="${i%3===0?7:5}" fill="#fff" opacity="${i%3===0?.95:.6}"/>`);return s;},
+  ring(){const cx=W/2,cy=H/2-10,r=52,pts=[];for(let i=0;i<6;i++){const a=-Math.PI/2+i*Math.PI/3;pts.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]);}
+    let s=`<path d="M${pts.map(p=>p[0].toFixed(1)+" "+p[1].toFixed(1)).join("L")}Z" stroke="#fff" stroke-width="2.2" fill="none"/>`;
+    pts.forEach(p=>s+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="5" fill="#fff"/>`);return s;},
+  lolli(){let s=`<path d="M10 ${H-46}H${W-10}" stroke="#fff" stroke-width="1.6" opacity=".6"/>`;
+    [96,54,124,40,84,140,64,104].forEach((h,i)=>{const x=24+i*((W-48)/7);
+      s+=`<path d="M${x.toFixed(1)} ${H-46}V${H-46-h}" stroke="#fff" stroke-width="1.4" opacity=".55"/><circle cx="${x.toFixed(1)}" cy="${H-46-h}" r="6" fill="#fff" opacity="${i%3===0?.95:.6}"/>`;});
+    return s;}
+};
+
+const ROW_A = [
+  ["Expression & Production","Core campaign · 7 assays",0,motif.helix()],
+  ["Binding Kinetics & Affinity","Core campaign · 6 assays",1,motif.curve()],
+  ["Biophysical Developability","Core campaign · 10 assays",4,motif.sigmoid()],
+  ["Cell-Based & Functional","Core campaign · 6 assays",0,motif.wells()],
+  ["Bioprocess & Fermentation","Core campaign · 5 assays",2,motif.bars(22,2.1)],
+  ["Custom Programmes","Scoped · by request",3,motif.graph()],
+  ["Genetic Engineering","Extended · 3 assays",1,motif.lattice()],
+  ["Biochemical Screening","Extended · 5 assays",4,motif.wells()],
+  ["Safety & ADMET","Extended · 9 assays",2,motif.curve()],
+  ["Pharmacology","Extended · 4 assays",0,motif.sigmoid()]
+];
+const ROW_B = [
+  ["Microbiology","Extended · 3 assays",1,motif.wells()],
+  ["Synthetic Biology","Extended · 1 assay",2,motif.graph()],
+  ["Protein Engineering","Extended · 2 assays",0,motif.bars(14,1.7)],
+  ["Proteomics","Extended · 11 assays",4,motif.bars(30,2.3)],
+  ["Metabolomics","Extended · 4 assays",2,motif.bars(36,3.1)],
+  ["Genomics & Transcriptomics","Extended · 6 assays",1,motif.helix()],
+  ["Epigenomics","Extended · 5 assays",0,motif.lolli()],
+  ["Structural Biology","Extended · 2 assays",4,motif.lattice()],
+  ["Hit Identification","Extended · 1 assay",3,motif.ring()],
+  ["Chemistry","Extended · 1 assay",2,motif.ring()]
+];
+
+const GLYPH = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="4" cy="4" r="1.7" fill="#fff"/><circle cx="10" cy="4" r="1.7" fill="#fff"/><circle cx="4" cy="10" r="1.7" fill="#fff"/><circle cx="10" cy="10" r="1.7" fill="#fff"/></svg>';
+
+function cardHTML([title, meta, fam, m]){
+  const [a,b] = FAM[fam];
+  return `<article class="ccard" tabindex="0" style="background:linear-gradient(180deg,${a},${b})">
+    <svg class="motif" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${m}</svg>
+    <span class="scrim"></span><span class="glyph">${GLYPH}</span>
+    <div class="cbody"><h4>${title}</h4><div class="cmeta mono">${meta}</div>
+      <div class="cbtns"><span>Add to campaign</span><span>View readouts</span></div></div>
+  </article>`;
+}
+/* duplicate the set so translateX(-50%) loops seamlessly */
+function fillRail(el, data){ el.innerHTML = (data.map(cardHTML).join("")).repeat(2); }
+fillRail(document.getElementById("railA"), ROW_A);
+fillRail(document.getElementById("railB"), ROW_B);
+
+/* nudge controls — shift the animation-delay to scrub the marquee */
+(function(){
+  const rails = [document.getElementById("railA"), document.getElementById("railB")];
+  let offset = 0;
+  const nudge = dir => {
+    offset += dir * 6;
+    rails.forEach(r => { r.style.animationDelay = offset + "s"; });
+  };
+  document.getElementById("railPrev").addEventListener("click", () => nudge(1));
+  document.getElementById("railNext").addEventListener("click", () => nudge(-1));
+})();
+
+/* ---------------- 96-well accounting grid ---------------- */
+(function(){
+  const host = document.getElementById("wells");
+  if (!host) return;
+  for (let i = 0; i < 96; i++){
+    const w = document.createElement("i");
+    if (i >= 89) w.className = "f"; else if (i >= 71) w.className = "c";
+    w.style.animationDelay = (i * 8) + "ms";
+    host.appendChild(w);
+  }
+})();
+
+/* ---------------- loop step tabs ---------------- */
+(function(){
+  const STEPS = [
+    ["Design","Your model proposes. Sequences, variants, libraries and conditions arrive as a spec — no format wrangling.",["Sequences","Variants","Libraries","Conditions"]],
+    ["Build","Construct design, expression in HEK293, CHO or E. coli, affinity purification and QC release — included in every campaign, before a single assay runs.",["HEK293","CHO","E. coli","SEC-HPLC","CE-SDS","LC-MS"]],
+    ["Test","Kinetics, developability, cell-based function and bioprocess — run to the readouts you configured, on named instruments.",["SPR","BLI","nanoDSF","AC-SINS","icIEF","ADCC"]],
+    ["Learn","Joinable rows land in your model as each run clears QC. Failures returned, limits marked, covariates exposed.",["Parquet","REST","Webhook","design_id"]]
+  ];
+  const title = document.getElementById("stepTitle"), body = document.getElementById("stepBody"), chips = document.getElementById("stepChips");
+  const btns = [...document.querySelectorAll(".step")];
+  function set(i){
+    btns.forEach(b => b.setAttribute("aria-selected", String(+b.dataset.step === i)));
+    title.textContent = STEPS[i][0];
+    body.textContent = STEPS[i][1];
+    chips.innerHTML = STEPS[i][2].map(c => `<span>${c}</span>`).join("");
+  }
+  btns.forEach(b => b.addEventListener("click", () => set(+b.dataset.step)));
+  set(1);
+})();
+
+/* ---------------- scroll reveal ---------------- */
+(function(){
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add("in-view"); io.unobserve(e.target); } }), { threshold:.12, rootMargin:"0px 0px -8% 0px" });
+  document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+  const orbit = document.getElementById("orbit");
+  if (orbit) new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add("in-view")), { threshold:.4 }).observe(orbit);
+})();
+
+/* ---------------- mobile nav ---------------- */
+(function(){
+  const nav = document.getElementById("nav"), b = nav.querySelector(".navburger");
+  b.addEventListener("click", () => {
+    const open = nav.classList.toggle("open");
+    b.setAttribute("aria-expanded", String(open));
+  });
+})();
+
+/* ---------------- sticky nav: go solid once past the hero ---------------- */
+(function(){
+  const nav = document.getElementById("nav");
+  const hero = document.querySelector(".hero");
+  let ticking = false;
+  const update = () => {
+    const limit = (hero ? hero.offsetHeight : 600) - 120;
+    nav.classList.toggle("solid", window.scrollY > limit);
+    ticking = false;
+  };
+  addEventListener("scroll", () => {
+    if (!ticking){ requestAnimationFrame(update); ticking = true; }
+  }, { passive:true });
+  update();
+})();
+
+/* ---------------- pause marquee when tab is hidden ---------------- */
+document.addEventListener("visibilitychange", () => {
+  document.querySelectorAll(".rail").forEach(r => r.classList.toggle("stopped", document.hidden));
+});
+</script>
+</body>
+</html>
