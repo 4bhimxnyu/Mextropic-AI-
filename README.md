@@ -39,7 +39,8 @@ server/
   catalogue.data.js      server copy of the catalogue
 api/
   index.js               Vercel serverless entry — re-exports server/app.js
-public/                  hero.mp4, jonas.jpg
+public/                  hero.mp4, hero-poster.jpg, testimonial.jpg
+CREDITS.md               image provenance and licences — keep it accurate
 ```
 
 ## Design tokens
@@ -72,11 +73,10 @@ dev needs no external dependency.
 
 ## Before this ships
 
-- **`public/jonas.jpg` is a placeholder.** It is an archival photograph of Jonas
-  Salk — a real, identifiable person — and almost certainly not licensed. It is
-  used as the hero poster and the testimonial portrait. Replace both.
 - **The testimonial quote is sample copy**, marked in the UI. Replace with an
-  approved customer quote or remove the section.
+  approved customer quote or remove the section. If you do add a real named
+  quote, read `CREDITS.md` first — the stock photo beside it must not stay, or
+  it reads as a portrait of the person being quoted.
 - **`GOOGLE_FORM_ACTION_URL` is unset**, so enquiries are logged, not delivered.
 - `static-legacy.html` is the previous hand-written single-file version, kept
   for reference. Safe to delete once this is live.

@@ -239,7 +239,7 @@ th:last-child, td:last-child { padding-right: 24px; }
 .tdots button { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 50%; background: var(--line-dark); cursor: pointer; }
 .tdots button.on { background: var(--signal); }
 .tphoto { background: var(--panel-slate); overflow: hidden; }
-.tphoto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 34%; }
+.tphoto img { width: 100%; height: 100%; object-fit: cover; object-position: 42% 42%; }
 .ph { display: inline-block; padding: 6px 10px; border: 1px dashed rgba(255, 255, 255, 0.55); border-radius: var(--r-sm); color: var(--on-dark); }
 
 /* ---------- enquiry ---------- */

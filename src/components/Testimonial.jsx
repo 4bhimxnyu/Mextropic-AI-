@@ -51,7 +51,7 @@ export default function Testimonial() {
             </div>
           </div>
           <div className="tphoto">
-            <img src="/jonas.jpg" alt="Scientist at a laboratory bench" />
+            <img src="/testimonial.jpg" alt="Gloved hands pipetting a sample into a plate rack in a clean room" />
           </div>
         </div>
       </div>

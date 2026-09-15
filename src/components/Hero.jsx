@@ -2,7 +2,7 @@ export default function Hero() {
   return (
     <header className="hero" id="top">
       <div className="hero-media">
-        <video autoPlay muted loop playsInline preload="metadata" aria-hidden="true" poster="/jonas.jpg">
+        <video autoPlay muted loop playsInline preload="metadata" aria-hidden="true" poster="/hero-poster.jpg">
           <source src="/hero.mp4" type="video/mp4" />
         </video>
       </div>
