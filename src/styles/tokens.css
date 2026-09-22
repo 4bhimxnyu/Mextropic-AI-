@@ -55,7 +55,8 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+/* the nav is fixed, so anchor targets must be offset or they land underneath it */
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: clamp(76px, 14vw, 104px); }
 
 body {
   margin: 0;

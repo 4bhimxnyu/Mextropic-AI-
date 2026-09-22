@@ -1,13 +1,16 @@
+import { useState } from 'react'
 import { domains } from '../data/site.js'
+import { useMediaQuery, COMPACT } from '../hooks/useMediaQuery.js'
 
-/** Figma "Domain rows": two rows that scroll continuously in opposite directions.
- *  Each row's children are duplicated in the file (…" · copy") — that duplication
- *  is what makes a marquee loop seamlessly: translate one full set width, then the
- *  copy is exactly where the original was, so the reset is invisible.
+/** Desktop: two marquee rows scrolling in opposite directions. The Figma file
+ *  duplicates each row's cards (" copy") - that duplication IS the loop
+ *  mechanism, so one full set can translate out while its copy takes its place.
  *
- *  Card = photo + #111c33@34% tint + bottom scrim, grip top-left, footer bottom (spec §5). */
+ *  Compact: a plain list. A horizontally scrolling marquee on a phone fights the
+ *  page's own vertical scroll and hides most of the catalogue off-screen, so the
+ *  12 domains become 12 readable rows instead. */
 export default function Domains({ onAdd, picked = [] }) {
-  const rows = [domains.filter((d) => d.row === 0), domains.filter((d) => d.row === 1)]
+  const compact = useMediaQuery(COMPACT)
 
   return (
     <section className="section domains" id="offer">
@@ -16,15 +19,76 @@ export default function Domains({ onAdd, picked = [] }) {
           <p className="eyebrow pill">Assay catalogue</p>
           <h2 className="h1" style={{ marginTop: 16 }}>What we offer.</h2>
           <p className="lead" style={{ maxWidth: 560 }}>
-            79 assays across 14 scientific domains — configured as one campaign, returned as one schema.
+            79 assays across 14 scientific domains - configured as one campaign, returned as one schema.
           </p>
         </div>
       </div>
 
+      {compact
+        ? <DomainList onAdd={onAdd} picked={picked} />
+        : <DomainMarquee onAdd={onAdd} picked={picked} />}
+    </section>
+  )
+}
+
+/* Twelve rows is a long scroll on a phone, so only the first five show until
+   asked for. This component only ever renders in compact mode, so the control
+   cannot appear on desktop. */
+const PREVIEW = 5
+
+function DomainList({ onAdd, picked }) {
+  const [expanded, setExpanded] = useState(false)
+  const shown = expanded ? domains : domains.slice(0, PREVIEW)
+  const rest = domains.length - PREVIEW
+
+  return (
+    <div className="wrap">
+      <ul className="dlist">
+        {shown.map((d) => {
+          const on = picked.includes(d.t)
+          return (
+            <li className="dlist__row" key={d.t}>
+              <img className="dlist__thumb" src={d.img} alt="" loading="lazy" decoding="async" />
+              <span className="dlist__name">{d.t}</span>
+              <a
+                className={'dlist__add' + (on ? ' is-picked' : '')}
+                href="#enquiry"
+                aria-label={(on ? 'Added ' : 'Add ') + d.t}
+                onClick={() => onAdd && onAdd(d.t)}
+              >
+                {on ? 'Added' : 'Add'}
+              </a>
+            </li>
+          )
+        })}
+      </ul>
+
+      <button
+        className="dlist__more"
+        type="button"
+        aria-expanded={expanded}
+        onClick={() => setExpanded((v) => !v)}
+      >
+        {expanded ? 'Show fewer' : 'See all ' + domains.length + ' domains'}
+        <span className="dlist__chev" aria-hidden="true" />
+      </button>
+      {!expanded && (
+        <p className="caption" style={{ marginTop: 10 }}>
+          {rest} more domains
+        </p>
+      )}
+    </div>
+  )
+}
+
+function DomainMarquee({ onAdd, picked }) {
+  const rows = [domains.filter((d) => d.row === 0), domains.filter((d) => d.row === 1)]
+
+  return (
+    <>
       {rows.map((row, r) => (
         <div className="marquee" key={r}>
           <div className={'marquee__track' + (r === 1 ? ' marquee__track--rev' : '')}>
-            {/* two identical sets: the second covers the seam as the first scrolls out */}
             {[0, 1].map((dup) => (
               <div className="marquee__set" key={dup} aria-hidden={dup === 1 ? 'true' : undefined}>
                 {row.map((d) => (
@@ -51,7 +115,6 @@ export default function Domains({ onAdd, picked = [] }) {
           </div>
         </div>
       ))}
-
-    </section>
+    </>
   )
 }

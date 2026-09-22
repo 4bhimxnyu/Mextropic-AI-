@@ -327,6 +327,62 @@ driver's evaluated value**, or it desynchronises.
 
 ---
 
+## 9. Responsive behaviour
+
+Sizing is **computed by the browser continuously**, not snapped at breakpoints.
+Two mechanisms, used for different jobs:
+
+- **`clamp()` / `vw` / `svh`** for anything that can scale — type, padding, radii, the
+  dial radius. The browser interpolates on every resize, so there is no jump.
+- **A live `matchMedia` hook** for the two changes CSS cannot express, where the DOM
+  itself differs. It listens for `change`, so rotating a device re-evaluates at once.
+
+The compact test is `(max-width: 760px), (max-height: 520px) and (orientation: landscape)`
+— width **or** short-landscape, because a 392px ring fails in both.
+
+### Structural switches
+
+| Component | Desktop | Compact |
+|---|---|---|
+| Four steps | radial dial, 392px ring | **flat bar**, all 72 ticks kept |
+| What we offer | two opposite-direction marquees | **list**, 5 of 12 + "See all" |
+| Nav | links inline | **toggle beside the CTA**, links in a panel |
+
+The dial's per-tick angle is published as a CSS custom property (`--i`) rather than baked
+into an inline transform, so the stylesheet owns the geometry and can switch between
+radial and flat without React re-rendering 72 nodes. `--r` is derived from the ring width,
+so ticks stay on the circle at every size rather than only at the design width.
+
+### Fitting the dashboard
+
+The campaign panel must shrink in **both** axes. At 812×375 landscape, fully tightened, it
+was still **433px — 115% of the viewport**. Tightening alone could not close a 133px gap,
+so in short landscape the body is capped and scrolls internally:
+
+```css
+.panel__body { max-height: calc(100svh - 130px); overflow-y: auto; }
+```
+
+Result: **294px, 78% of viewport, whole panel visible, all five data rows still reachable.**
+Use `svh`, not `vh` — on mobile `vh` includes the retracting browser chrome.
+
+Columns drop in order of least information value (`Run` bar at 560px, `Flag` at 400px)
+rather than letting the table force a sideways scroll inside a vertically scrolling page.
+In short landscape the metrics keep four columns and their verification notes hide.
+
+### Rules learned here
+
+- **A pill is a single-line form.** The hero announcement wrapped to three lines at 67
+  characters. Splitting the caveat out of the pill fixed it; truncating would have dropped
+  a qualifier on the word "free".
+- **`inline-block` is blockified when the element becomes a grid or flex item** — it then
+  stretches to the full column. `width: fit-content` + `justify-self: start`.
+- **A fixed nav needs `scroll-padding-top`**, or every anchor target lands underneath it.
+- A menu must stay legible where `backdrop-filter` is unsupported — keep the fill opaque
+  enough to stand alone.
+
+---
+
 ## 8. Content status
 
 These figures appear in the design and are **UNVERIFIED**:

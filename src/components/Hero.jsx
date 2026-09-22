@@ -37,7 +37,11 @@ export default function Hero() {
     <section className="section hero" id="top">
       <div className="wrap">
         <div className="hero__copy">
-          <span className="hero__pill"><b>{hero.pill.tag}</b> {hero.pill.text}</span>
+          <span className="hero__pill">
+            <b>{hero.pill.tag}</b>
+            <span className="hero__pill-text">{hero.pill.text}</span>
+          </span>
+          <p className="hero__terms">{hero.pill.terms}</p>
           <h1 className="display">{hero.title}</h1>
           <p className="lead hero__dek">{hero.dek}</p>
           <div className="hero__actions">

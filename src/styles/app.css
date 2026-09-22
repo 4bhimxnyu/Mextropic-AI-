@@ -9,11 +9,12 @@
 }
 @media (min-width: 900px) { .wrap { padding-inline: var(--gutter); } }
 
-/* §4 section rhythm: 140px standard, 64px on a shared gap */
-.section { padding-block: 72px; border-top: 1px solid var(--border-default); }
-@media (min-width: 900px) { .section { padding-block: var(--section-pad); } }
-.section--tight-top    { padding-top: var(--section-pad-tight); }
-.section--tight-bottom { padding-bottom: var(--section-pad-tight); }
+/* 4 section rhythm: 140px standard, 64px on a shared gap. clamp() lets the
+   browser interpolate continuously with the viewport instead of snapping at a
+   breakpoint, which is what keeps short landscape windows from over-padding. */
+.section { padding-block: clamp(48px, 9vw, var(--section-pad)); border-top: 1px solid var(--border-default); }
+.section--tight-top    { padding-top: clamp(32px, 5vw, var(--section-pad-tight)); }
+.section--tight-bottom { padding-bottom: clamp(32px, 5vw, var(--section-pad-tight)); }
 /* the metrics bridge carries no rule — it belongs to the dashboard above it */
 .section--no-rule { border-top: 0; }
 
@@ -29,6 +30,7 @@
 }
 .nav__bar {
   pointer-events: auto;
+  position: relative;
   width: 100%; max-width: var(--content);
   display: flex; align-items: center; gap: 36px;
   padding: 12px 14px 12px 22px;
@@ -81,26 +83,78 @@
   .nav__short { display: none; }
 }
 @media (max-width: 719px) {
-  .nav__bar { gap: 12px; padding: 10px 10px 10px 16px; }
+  .nav__bar { gap: 10px; padding: 8px 8px 8px 14px; }
   .nav__brand { font-size: 14px; }
-  .nav__primary { padding: 9px 14px; font-size: 13px; }
+  .nav__primary { padding: 9px 13px; font-size: 13px; }
 }
+
+/* ---- mobile menu: a toggle beside the CTA, and the panel it opens ---- */
+.nav__toggle {
+  display: none; flex: none; width: 38px; height: 38px;
+  border: 1px solid var(--border-default); border-radius: 999px;
+  background: rgba(255,255,255,.7); cursor: pointer;
+  padding: 0; align-items: center; justify-content: center;
+  flex-direction: column; gap: 4px;
+}
+.nav__toggle span {
+  display: block; width: 15px; height: 1.5px; border-radius: 2px;
+  background: var(--text-primary);
+  transition: transform .28s var(--ease-out), opacity .2s var(--ease-out);
+}
+.nav__toggle.is-open span:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
+.nav__toggle.is-open span:nth-child(2) { opacity: 0; }
+.nav__toggle.is-open span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
+@media (max-width: 1039px) { .nav__toggle { display: flex; } }
+
+.nav__panel {
+  position: absolute; inset: calc(100% + 8px) 0 auto;
+  display: grid; grid-template-rows: 0fr;
+  transition: grid-template-rows .32s var(--ease-out), opacity .2s var(--ease-out);
+  opacity: 0; pointer-events: none;
+}
+.nav__panel.is-open { grid-template-rows: 1fr; opacity: 1; pointer-events: auto; }
+.nav__panel-inner {
+  min-height: 0; overflow: hidden;
+  display: flex; flex-direction: column;
+  background: rgba(255,255,255,.97); backdrop-filter: blur(14px);
+  border: 1px solid var(--border-default); border-radius: 20px;
+  box-shadow: var(--shadow-nav);
+}
+.nav__panel.is-open .nav__panel-inner { padding: 8px; }
+.nav__panel a {
+  padding: 13px 14px; border-radius: 12px; font-size: 15px;
+  color: var(--text-secondary); text-decoration: none;
+}
+.nav__panel a:hover, .nav__panel a:focus-visible { background: var(--surface-soft); color: var(--text-primary); }
+.nav__panel-cta { color: var(--accent-primary) !important; font-weight: 500; }
+@media (min-width: 1040px) { .nav__panel { display: none; } }
 
 /* ---------------------------------------------------------------- hero §6.1 */
 .hero { padding-top: 0; padding-bottom: 0; border-top: 0; }
 /* 100px above the copy — also the clearance the fixed nav needs (it sits 12px
    from the top and is ~69px tall, so it occupies 12–81px) */
 .hero__copy { padding-top: 100px; display: grid; justify-items: center; gap: 20px; text-align: center; }
+/* A pill is a single-line form. Rather than let it wrap to three lines on a
+   phone, the type shrinks with the viewport and the caveat sits beneath it. */
 .hero__pill {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 7px 14px 7px 8px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 13px 6px 7px; border-radius: 999px;
   border: 1px solid var(--border-default); background: #fff;
-  box-shadow: var(--shadow-nav); font-size: 13px; color: var(--text-secondary);
+  box-shadow: var(--shadow-nav);
+  font-size: clamp(11px, 3.1vw, 13px); color: var(--text-secondary);
+  max-width: 100%;
+}
+.hero__pill-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hero__terms {
+  font-family: var(--font-mono); font-size: clamp(10px, 2.6vw, 11px);
+  color: var(--text-muted); margin: -8px 0 0;
 }
 .hero__pill b {
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.071em;
+  flex: none;
+  font-family: var(--font-mono); font-size: clamp(9px, 2.5vw, 11px); letter-spacing: 0.071em;
   font-weight: 400; color: var(--accent-primary);
-  background: var(--surface-tint); padding: 3px 8px; border-radius: 999px;
+  background: var(--surface-tint); padding: 3px 7px; border-radius: 999px;
+  text-transform: uppercase;
 }
 .hero__dek { max-width: 620px; }
 .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 8px; }
@@ -122,11 +176,23 @@
 @media (min-width: 900px) { .logos-strip { padding-block: 36px; } }
 .logos { display: flex; flex-wrap: wrap; align-items: center; gap: 32px; }
 .logos__label { font-size: 13px; font-weight: 500; color: var(--text-primary); max-width: 180px; line-height: 1.45; }
-.logos__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 44px; }
-.logos__mark { display: block; max-width: 100%; object-fit: contain; }
-@media (max-width: 560px) {
-  .logos__list { gap: 28px; }
-  .logos__mark { height: 32px !important; }
+.logos__list {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: clamp(18px, 4.5vw, 44px);
+}
+/* The inline height from Figma is the ceiling; below that the marks scale with
+   the viewport so three lockups always fit a phone without wrapping oddly. */
+.logos__mark {
+  display: block; object-fit: contain;
+  height: clamp(20px, 5.2vw, var(--mark-h, 46px)) !important;
+  max-width: 40vw;
+}
+@media (max-width: 760px) {
+  .logos { gap: 14px; flex-direction: column; align-items: flex-start; }
+  .logos__label { max-width: none; font-size: 12px; }
+  .logos__list { gap: clamp(14px, 5vw, 28px); width: 100%; justify-content: space-between; }
+  .logos__mark { max-width: 28vw; }
 }
 
 /* ---------------------------------------------------------------- how it works §6.4 */
@@ -148,27 +214,48 @@
 .how__right { display: grid; align-content: start; gap: 56px; }
 .how__dek { max-width: 420px; font-size: 18px; color: var(--text-primary); }
 
-/* radial dial: 72 ticks, one every 5deg, outer radius 196 (Figma 304:6) */
-.dial { display: grid; place-items: center; width: 100%; margin-top: 56px; }
+/* Radial dial: 72 ticks, one every 5deg, outer radius 196 (Figma 304:6).
+   The ring diameter tracks the viewport, and --r is derived from it so the
+   ticks stay on the circle at every size rather than only at the design width. */
+.dial { display: grid; place-items: center; width: 100%; margin-top: clamp(28px, 5vw, 56px); }
 .dial__ring {
-  position: relative; width: 392px; height: 392px;
-  max-width: 100%; aspect-ratio: 1;
+  position: relative;
+  width: min(392px, 78vw, 46vh);
+  aspect-ratio: 1;
+  --r: calc(min(392px, 78vw, 46vh) / 2);
+  --tick-h: clamp(22px, calc(var(--r) * 0.235), 46px);
 }
 .dial__tick {
   position: absolute; left: 50%; top: 50%;
-  width: 5px; height: 46px; margin-left: -2.5px; border-radius: 2px;
+  width: 5px; height: var(--tick-h); margin-left: -2.5px; border-radius: 2px;
   transform-origin: 50% 0;
+  transform: rotate(calc(var(--i) * 5deg)) translateY(calc(var(--r) * -1));
   background: var(--border-default);
-  transition: background-color .45s var(--ease-out);
+  transition: background-color .45s var(--ease-out), transform .3s var(--ease-out);
 }
 .dial__centre { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 6px; }
-.dial__label { font-size: 22px; letter-spacing: -0.01em; margin: 0; }
-.dial__pct { font-family: var(--font-mono); font-size: 13px; color: var(--accent-primary); margin: 0; }
+.dial__label { font-size: clamp(16px, 3.6vw, 22px); letter-spacing: -0.01em; margin: 0; }
+.dial__pct { font-family: var(--font-mono); font-size: clamp(11px, 2.6vw, 13px); color: var(--accent-primary); margin: 0; }
 
-@media (max-width: 520px) {
-  .dial__ring { width: 300px; height: 300px; }
-  .dial__tick { height: 34px; }
+/* ---- flat variant: the same 72 ticks as a bar ----
+   A 392px ring will not fit a 375px viewport, and shrinking it far enough makes
+   the centre label unreadable. Flat keeps every tick and stays legible. */
+.dial--flat { margin-top: clamp(20px, 5vw, 32px); }
+.dial--flat .dial__ring {
+  width: 100%; aspect-ratio: auto; height: auto;
+  display: flex; align-items: flex-end; gap: 2px;
+  padding-bottom: 52px;              /* room for the centre labels beneath */
 }
+.dial--flat .dial__tick {
+  position: static; transform: none; margin-left: 0;
+  flex: 1 1 0; min-width: 0; width: auto;
+  height: clamp(18px, 6vw, 28px); border-radius: 1px;
+}
+.dial--flat .dial__centre {
+  inset: auto 0 0; place-content: start;
+  text-align: left; display: flex; align-items: baseline; gap: 10px;
+}
+.dial--flat .dial__label { font-size: 15px; }
 
 /* steps: hairline-separated rows, inactive ones dimmed */
 .steps { list-style: none; margin: 0; padding: 0; display: grid; }
@@ -183,8 +270,21 @@
 .step__k { font-family: var(--font-mono); font-size: 11px; letter-spacing: .071em; text-transform: uppercase; color: var(--accent-primary); }
 .step__t { font-size: 21px; letter-spacing: -0.02em; line-height: 1.3; font-weight: 400; margin: 0; }
 .step__d { margin-top: 8px; max-width: 46ch; }
+.step__t { font-size: clamp(17px, 2.4vw, 21px); }
 @media (max-width: 700px) {
-  .step { grid-template-columns: 1fr; gap: 10px; }
+  .step { grid-template-columns: 1fr; gap: 8px; padding: 18px 0; }
+  .step__head { gap: 12px; }
+  .step__d { max-width: none; }
+}
+@media (max-width: 760px) {
+  .how { gap: 32px; }
+  .how__right { gap: 28px; }
+  .how__dek { font-size: 16px; max-width: none; }
+}
+/* short landscape: drop the dial's vertical appetite right down */
+@media (max-height: 520px) and (orientation: landscape) {
+  .dial { margin-top: 16px; }
+  .dial--flat .dial__ring { padding-bottom: 44px; }
 }
 
 /* ---------------------------------------------------------------- domains */
@@ -205,6 +305,42 @@
   .marquee { overflow-x: auto; }
   .marquee__track { animation: none; }
 }
+
+/* ---- compact: the catalogue as a list rather than a marquee ---- */
+.dlist { list-style: none; margin: 0; padding: 0; display: grid; }
+.dlist__row {
+  display: grid;
+  grid-template-columns: clamp(40px, 12vw, 56px) 1fr auto;
+  align-items: center; gap: clamp(10px, 3vw, 16px);
+  padding: clamp(10px, 2.6vw, 14px) 0;
+  border-top: 1px solid var(--border-default);
+}
+.dlist__row:last-child { border-bottom: 1px solid var(--border-default); }
+.dlist__thumb { width: 100%; aspect-ratio: 1; border-radius: 10px; object-fit: cover; display: block; }
+.dlist__name { font-size: clamp(14px, 3.7vw, 16px); letter-spacing: -0.01em; line-height: 1.3; min-width: 0; }
+.dlist__add {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .071em;
+  text-transform: uppercase; text-decoration: none;
+  padding: 8px 14px; border-radius: 999px;
+  border: 1px solid var(--border-default); color: var(--text-secondary);
+  background: rgba(255,255,255,.7); white-space: nowrap;
+}
+.dlist__more {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; margin-top: 16px; cursor: pointer;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .071em;
+  text-transform: uppercase; color: var(--text-primary);
+  padding: 13px 16px; border-radius: 999px;
+  border: 1px solid var(--border-default); background: rgba(255,255,255,.7);
+}
+.dlist__more:hover { border-color: var(--border-strong); }
+.dlist__chev {
+  width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translate(-1px,-1px);
+  transition: transform .3s var(--ease-out);
+}
+.dlist__more[aria-expanded="true"] .dlist__chev { transform: rotate(-135deg) translate(-1px,-1px); }
+.dlist__add.is-picked { background: var(--accent-primary); color: #fff; border-color: transparent; }
 
 .card {
   position: relative; width: 300px; height: 250px; flex: none;
@@ -232,7 +368,7 @@
 .panel__status { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--accent-primary); background: var(--surface-tint); padding: 5px 12px; border-radius: 999px; }
 .panel__status i { width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
 .panel__body { display: grid; grid-template-columns: 1fr; }
-@media (min-width: 860px) { .panel__body { grid-template-columns: 220px 1fr; } }
+@media (min-width: 860px) { .panel__body { grid-template-columns: clamp(170px, 18vw, 220px) 1fr; } }
 .panel__side { border-right: 1px solid var(--border-default); padding: 20px 16px; display: grid; gap: 4px; align-content: start; }
 .panel__nav { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: var(--text-secondary); }
 .panel__nav i { width: 12px; height: 12px; border-radius: 3px; background: var(--border-default); }
@@ -254,28 +390,92 @@
 .bar { height: 6px; border-radius: 999px; background: var(--accent-primary); }
 .bar--mute { background: var(--border-default); }
 
+/* The dashboard has to shrink in BOTH axes on a phone: a 660px-tall panel eats a
+   whole portrait viewport and more than one in landscape. Every internal size is
+   fluid, and the sidebar folds into a scrolling row. */
+@media (max-width: 860px) {
+  .panel { border-radius: 14px; }
+  .panel__bar { padding: 11px 13px; gap: 7px; }
+  .panel__dot { width: 7px; height: 7px; }
+  .panel__title { font-size: 12px; margin-left: 3px; }
+  .panel__status { font-size: 11px; padding: 4px 9px; }
+  .panel__side {
+    border-right: 0; border-bottom: 1px solid var(--border-default);
+    display: flex; gap: 6px; overflow-x: auto; padding: 10px 12px; scrollbar-width: none;
+  }
+  .panel__side::-webkit-scrollbar { display: none; }
+  .panel__side > .eyebrow { display: none; }
+  .panel__nav { flex: none; padding: 7px 11px; font-size: 12px; white-space: nowrap; }
+  .panel__main { padding: 13px; gap: 12px; }
+  .kpi { padding: 11px; border-radius: 10px; }
+  .kpi b { font-size: 16px; }
+  .kpi span { font-size: 11px; }
+  .tbl th { padding: 9px 10px; font-size: 10px; }
+  .tbl td { padding: 9px 10px; font-size: 12px; }
+  .tbl .mono { font-size: 11px; }
+}
+/* columns drop in order of least information value, rather than letting the
+   table force a horizontal scroll inside a vertically scrolling page */
+@media (max-width: 560px) {
+  .kpis { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .tbl th:nth-child(5), .tbl td:nth-child(5) { display: none; }
+}
+@media (max-width: 400px) {
+  .tbl th:nth-child(4), .tbl td:nth-child(4) { display: none; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .panel__side { padding: 7px 10px; }
+  .panel__main { padding: 10px; gap: 9px; }
+  .kpi { padding: 8px; }
+  .kpi b { font-size: 15px; }
+  .kpi span { font-size: 10px; }
+  .tbl th { padding: 6px 9px; }
+  .tbl td { padding: 6px 9px; font-size: 11px; }
+  .panel__main .caption { display: none; }
+  /* Even fully tightened, five data rows plus KPIs exceed a 375px-tall window.
+     Cap the body and let it scroll internally so the whole panel is visible at
+     once and no data is hidden. svh tracks the real viewport on mobile, where
+     vh includes the retracting browser chrome. */
+  .panel__body {
+    max-height: calc(100svh - 130px);
+    max-height: calc(100vh - 130px);
+    max-height: calc(100svh - 130px);
+    overflow-y: auto; overscroll-behavior: contain;
+  }
+}
+
 /* ---------------------------------------------------------------- metrics §6.3 */
 .metrics { background: linear-gradient(to bottom, var(--ramp-f4f7fc) 0%, #fff 100%); }
 .metrics__panel {
-  position: relative; border-radius: 16px; padding: 40px;
+  position: relative; border-radius: clamp(12px, 2vw, 16px);
+  padding: clamp(18px, 4.4vw, 40px);
   background: rgba(231, 237, 244, 0.5);          /* cooler+darker than the paper, not white */
   border: 1px solid #dbe3ee;
   backdrop-filter: blur(24px);
   opacity: 0; transition: opacity 450ms var(--ease-out);
 }
 .metrics__panel.is-in { opacity: 1; }
-.metrics__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.metrics__grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: clamp(14px, 3vw, 24px);
+}
 @media (min-width: 900px) { .metrics__grid { grid-template-columns: repeat(4, 1fr); gap: 0; } }
 .metric {
-  padding: 20px 24px 0 0; border-top: 1px solid var(--border-default);
+  padding: clamp(12px, 2.4vw, 20px) clamp(10px, 2.4vw, 24px) 0 0;
+  border-top: 1px solid var(--border-default);
   opacity: 0; transform: translateY(var(--rise));
   transition: opacity var(--reveal-dur) var(--ease-out), transform var(--reveal-dur) var(--ease-out);
   transition-delay: var(--d, 0ms);
 }
 .metric.is-in { opacity: 1; transform: none; }
-.metric__fig { font-size: clamp(2rem, 3.4vw, 44px); letter-spacing: -0.05em; line-height: 1; color: var(--text-primary); }
-.metric__label { font-size: 14px; color: var(--text-secondary); margin-top: 10px; }
-.metric__note { margin-top: 10px; }
+.metric__fig { font-size: clamp(26px, 7vw, 44px); letter-spacing: -0.05em; line-height: 1; color: var(--text-primary); }
+.metric__label { font-size: clamp(12px, 3.1vw, 14px); color: var(--text-secondary); margin-top: clamp(6px, 1.6vw, 10px); }
+.metric__note { margin-top: clamp(5px, 1.4vw, 10px); font-size: clamp(11px, 2.7vw, 13px); }
+@media (max-height: 520px) and (orientation: landscape) {
+  .metrics__grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .metrics__panel { padding: 16px; }
+  .metric__note { display: none; }   /* the verification notes are the first thing to go */
+}
 
 /* ---------------------------------------------------------------- enquiry */
 .cta { background: linear-gradient(to bottom, #fff 0%, var(--ramp-edf3fa) 50%, var(--ramp-dde8f6) 100%); }

@@ -10,7 +10,9 @@ export const nav = [
 ];
 
 export const hero = {
-  pill: { tag: 'New', text: 'First batch of pilot data is free — eligibility and terms apply' },
+  // The caveat is kept, not dropped — it qualifies "free" — but it lives
+  // outside the pill so the pill stays one line.
+  pill: { tag: 'New', text: 'First batch of pilot data is free', terms: 'Eligibility and terms apply.' },
   title: 'Experiments in weeks, not months.',
   dek: 'From hypothesis to validated results — Mextropic runs the wet-lab work in the loop, so your team moves at the speed of the model, not the bench.',
   primary: 'Talk to our scientific team',
