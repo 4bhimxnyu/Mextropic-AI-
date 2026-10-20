@@ -52,7 +52,7 @@ export default function App() {
           <div className="path path-enter" key="data">
             <OfferData onAdd={add} picked={picked} onForm={openForm} />
             <Metrics items={metricsData} />
-            <Clients logos={false} />
+            <Clients />
             <Enquiry variant="data" picked={picked} onRemove={remove} />
             <Faq items={faqs.data} />
           </div>
@@ -64,7 +64,7 @@ export default function App() {
             <ValueProp />
             <Metrics items={metricsInd} />
             <TrackItLive />
-            <Clients logos />
+            <Clients />
             <Enquiry variant="ind" />
             <Faq items={faqs.ind} />
           </div>
