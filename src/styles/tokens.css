@@ -1,23 +1,27 @@
-/* Design tokens — DESIGN-SPEC.md §2 Colour, §3 Typography, §4 Spacing.
-   Light is the shipped mode. Navy values are carried for the alternate theme. */
+/* Design tokens — iteration 6 ("iteration 6 — two paths", design-notes frame 564:6).
+   Vermilion accent on warm neutrals. Ink stays #111111. */
 
 :root {
-  /* ---- colour: Light ---- */
+  /* ---- colour ---- */
   --bg-page:        #ffffff;
-  --surface-soft:   #f5f8fc;
-  --surface-tint:   #e7edf4;
+  --surface-soft:   #faf7f4;   /* cards, FAQ band */
+  --surface-tint:   #f5efea;   /* section alt, footer, glass fill */
+  --surface-dark:   #1c1512;   /* the bespoke card */
   --text-primary:   #111111;
-  --text-secondary: #4b5563;
-  --text-muted:     #64748b;   /* NOT #8f8f8f — that fails AA at 3.0:1. This is 4.76:1 */
-  --border-default: #e2e8f0;
-  --border-strong:  #cbd5e1;
-  --accent-primary: #5a67d8;
-  --accent-brand:   #6674dc;
+  --text-secondary: #4b4845;
+  --text-muted:     #6e6963;   /* 4.9:1 on white */
+  --border-default: #e9e2db;
+  --border-strong:  #d8cfc6;
+  --accent-primary: #d93d17;   /* buttons, links, small text — 4.6:1 on white */
+  --accent-graphic: #f04e23;   /* rings, bars, arrows: graphic only */
+  --accent-deep:    #b8330f;   /* label text on tint */
+  --accent-tint:    #fdece6;   /* pills */
+  --accent-hover:   #c33512;
 
   /* ramp stops used by the section gradients */
-  --ramp-f4f7fc: #f4f7fc;
-  --ramp-edf3fa: #edf3fa;
-  --ramp-dde8f6: #dde8f6;
+  --ramp-hero:  #fbe9e1;
+  --ramp-warm:  #fbf6f2;
+  --ramp-warm2: #f7efe9;
 
   /* ---- type ---- */
   --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -27,30 +31,19 @@
   --content: 1240px;
   --gutter: 100px;
   --section-pad: 140px;
-  --section-pad-tight: 64px;   /* the shared-gap half: 64 + 64 = 128 */
+  --section-pad-tight: 64px;
   --split-gap: 80px;
 
   /* ---- elevation ---- */
-  --shadow-nav:  0 12px 36px rgba(16, 24, 40, 0.10);
-  --shadow-card: 0 18px 44px rgba(18, 28, 51, 0.10);
-  --shadow-form: 0 18px 48px rgba(18, 28, 51, 0.10);
+  --shadow-nav:  0 12px 36px rgba(40, 24, 16, 0.10);
+  --shadow-card: 0 18px 44px rgba(51, 28, 18, 0.10);
+  --shadow-form: 0 18px 48px rgba(51, 28, 18, 0.10);
 
   /* ---- motion ---- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --rise: 14px;
   --reveal-dur: 500ms;
   --reveal-stagger: 90ms;
-}
-
-:root[data-theme='navy'] {
-  --bg-page:        #080d18;
-  --surface-soft:   #0d1424;
-  --surface-tint:   #101a2c;
-  --text-primary:   #e7edf4;
-  --text-secondary: #6a8dab;
-  --text-muted:     #4a6880;
-  --border-default: #26384b;
-  --border-strong:  #32475e;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -69,17 +62,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---- type roles (§3). Never bold a headline. ---- */
-.display { font-size: clamp(2.5rem, 5.4vw, 64px); letter-spacing: -0.06em; line-height: 1;    font-weight: 400; margin: 0; text-wrap: balance; }
-.h1      { font-size: clamp(2rem,   3.6vw, 44px); letter-spacing: -0.05em; line-height: 1;    font-weight: 400; margin: 0; text-wrap: balance; }
-.h2      { font-size: clamp(1.6rem, 2.4vw, 30px); letter-spacing: -0.05em; line-height: 1.1;  font-weight: 400; margin: 0; text-wrap: balance; }
-.h3      { font-size: 18px; letter-spacing: -0.02em; line-height: 1.3; font-weight: 400; margin: 0; }
-.lead    { font-size: 16px; letter-spacing: -0.02em; line-height: 1.5; color: var(--text-secondary); margin: 0; }
-.body    { font-size: 14px; line-height: 1.5; color: var(--text-secondary); margin: 0; }
+/* ---- type roles. Headlines are Medium at most; presence comes from size and tracking. ---- */
+.display { font-size: clamp(2.5rem, 5.4vw, 60px); letter-spacing: -0.045em; line-height: 1.05; font-weight: 500; margin: 0; text-wrap: balance; }
+.h1      { font-size: clamp(2rem,   3.6vw, 46px); letter-spacing: -0.04em;  line-height: 1.05; font-weight: 500; margin: 0; text-wrap: balance; }
+.h2      { font-size: clamp(1.6rem, 2.4vw, 30px); letter-spacing: -0.03em;  line-height: 1.15; font-weight: 500; margin: 0; text-wrap: balance; }
+.h3      { font-size: 18px; letter-spacing: -0.02em; line-height: 1.3; font-weight: 500; margin: 0; }
+.lead    { font-size: 16px; letter-spacing: -0.01em; line-height: 1.55; color: var(--text-secondary); margin: 0; }
+.lead--lg { font-size: clamp(16px, 1.4vw, 19px); }
+.body    { font-size: 14px; line-height: 1.55; color: var(--text-secondary); margin: 0; }
 .small   { font-size: 13px; line-height: 1.5; color: var(--text-secondary); margin: 0; }
 .medium  { font-weight: 500; }
 
-/* 11px +7.1% uppercase is a LABEL. Never set a sentence in it. */
+/* 10–11px +7.1% uppercase is a LABEL. Never set a sentence in it. */
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -89,7 +83,6 @@ body {
   margin: 0;
 }
 .data    { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0; margin: 0; }
-/* sentence-length fine print: mono and small, but NOT uppercase and NOT tracked */
 .caption { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0; line-height: 1.5; color: var(--text-muted); margin: 0; }
 
 a { color: inherit; }

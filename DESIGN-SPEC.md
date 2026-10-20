@@ -1,3 +1,66 @@
+# Iteration 6 addendum — the two-path site (branch `v3`, 2026-10-20)
+
+Built from Figma page **`iteration 6 — two paths`** (`556:6`): frames `Landing — 00 Entry`
+(`561:2826`), `01 Path A · Multiomics data` (`561:6`), `02 Path B · Discovery to IND` (`556:7`),
+and the design-notes frame (`564:6`). Everything below in this file that describes the
+iteration-5 frame still applies to spacing, motion timing and responsive behaviour; this
+section records what changed.
+
+## Structure
+
+One page, one URL parameter. `?path=data` | `?path=ind` selects a path; no parameter shows
+only nav, hero, trust strip, chooser and footer. Choosing a path pushes history (back undoes
+it), renders the path block with a 600ms rise, and scrolls to `#offer`. The nav links
+"Multiomics Data" / "Discovery to IND" and the footer links set the same state.
+
+| State | Sections after the chooser |
+|---|---|
+| none | (nothing) — but a CTA press reveals the lead form alone, since the design gives the form no home on the entry state |
+| data | What we offer (card rail + bespoke card) → Metrics → Clients (testimonials only) → Lead form → FAQ |
+| ind | What we offer (pipeline + two track cards) → Why Mextropic (flowchart) → Metrics → Dashboard → Clients (logo slots + testimonials) → Lead form → FAQ |
+
+## Colour
+
+Indigo → vermilion on warm neutrals. `src/styles/tokens.css` is the source of truth.
+
+| Token | Value | Role |
+|---|---|---|
+| `--accent-primary` | `#d93d17` | buttons, links, small text (4.6:1 on white) |
+| `--accent-graphic` | `#f04e23` | rings, bars, arrows, chart strokes |
+| `--accent-deep` | `#b8330f` | label text on tint |
+| `--accent-tint` | `#fdece6` | pills |
+| `--surface-tint` | `#f5efea` | offer band, footer |
+| `--surface-soft` | `#faf7f4` | cards, FAQ |
+| `--surface-dark` | `#1c1512` | bespoke card |
+| `--border-default` / `--border-strong` | `#e9e2db` / `#d8cfc6` | hairlines |
+| `--text-secondary` / `--text-muted` | `#4b4845` / `#6e6963` | body / captions |
+
+Headings are Geist Medium (500) at the iteration-6 sizes (60 / 46 / 30 / 28); the
+"never bold" rule holds — nothing is set above 500.
+
+## Motion (what carries over, what is new)
+
+- Kept from v2: hero video loop with pause control, nav solid past 24px, reveal rises
+  (14px / 500ms / `cubic-bezier(0.16,1,0.3,1)` / 90ms stagger), marquee rail (48s, reverse on
+  row 2, pause on hover), metrics panel-then-columns with count-up, hover-driven FAQ.
+- New: hero copy rises line by line on first paint (0–320ms); chooser cards reveal with a
+  90ms stagger, lift 3px on hover, selected ring scales in; path block rises as one; pipeline
+  chips and track cards stagger, assay rows stagger 50ms each; flowchart cards 80ms apart with
+  connectors fading in after their card (replaces the tick ring); sensorgram curves draw in
+  with `stroke-dashoffset`; "Running" dot pulses.
+- `prefers-reduced-motion` shows every end state and disables the marquee.
+
+## Content status
+
+- Hero video: the v2 lab loop stands in until the VIT lab footage arrives.
+- Client logos (Path B) and both testimonials are dashed placeholders.
+- FAQ: only the first answer exists in Figma; the other three are build copy to be approved.
+- Lead form has no endpoint; submit opens a `mailto:` to both founders with the answers.
+- "Talk to our team" on the entry state is a `mailto:`; once a path is chosen it scrolls to the form.
+- Blog section and links removed (founders' request); nav is Multiomics Data / Discovery to IND / About.
+
+---
+
 # Mextropic — Design & Motion Specification
 
 Extracted from Figma file `lqn7ySvScG1B6s8IE2BDOw`, page **iteration 5 — light v2**,

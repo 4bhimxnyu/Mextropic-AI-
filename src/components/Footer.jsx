@@ -1,41 +1,50 @@
 import Logo from './Logo.jsx'
-import { footerCols, contact, office } from '../data/site.js'
+import { footerCols, contact } from '../data/site.js'
 
-export default function Footer() {
+/** Always renders, path or no path. Brand · Explore · Legal; the Blog column is
+ *  gone with the Blog section (founders' round-5 feedback). */
+export default function Footer({ onChoose, onForm }) {
+  const link = (l) => {
+    if (l.path) {
+      return <a key={l.label} href={'?path=' + l.path} onClick={(e) => { e.preventDefault(); onChoose(l.path) }}>{l.label}</a>
+    }
+    if (l.form) {
+      return <a key={l.label} href="#enquiry" onClick={(e) => { e.preventDefault(); onForm() }}>{l.label}</a>
+    }
+    return <a key={l.label} href={l.href}>{l.label}</a>
+  }
+
   return (
     <footer className="footer" id="footer">
       <div className="wrap">
         <div className="footer__top">
           <div className="footer__col">
-            <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 15 }}>
-              <Logo /> Mextropic
+            <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 16 }}>
+              <Logo stroke="var(--accent-primary)" /> Mextropic
             </span>
             <p className="body" style={{ maxWidth: 260 }}>
-              Autonomous wet-lab infrastructure for preclinical research.
+              Autonomous wet-lab infrastructure<br />for preclinical research.
             </p>
             <p className="small medium" style={{ color: 'var(--text-primary)' }}>
-              {contact.map((c) => <span key={c} style={{ display: 'block' }}>{c}</span>)}
+              {contact.map((c) => <a key={c} href={'mailto:' + c} style={{ display: 'block', textDecoration: 'none' }}>{c}</a>)}
             </p>
-            <address className="small" style={{ fontStyle: 'normal', color: 'var(--text-secondary)' }}>
-              {office.map((line) => <span key={line} style={{ display: 'block' }}>{line}</span>)}
-            </address>
           </div>
 
           {footerCols.map((col) => (
             <nav className="footer__col" key={col.h} aria-label={col.h}>
               <p className="eyebrow" style={{ color: 'var(--accent-primary)' }}>{col.h}</p>
-              {col.links.map((l) => <a key={l} href="#top">{l}</a>)}
+              {col.links.map(link)}
             </nav>
           ))}
         </div>
 
         <div className="footer__bottom">
-          <span>© {new Date().getFullYear()} Mextropic. All rights reserved.</span>
+          <span>&copy; {new Date().getFullYear()} Mextropic. All rights reserved.</span>
           <span>Built for research teams, not for slide decks.</span>
         </div>
       </div>
 
-      {/* 176px Regular at −6% tracking — a quiet watermark, never bold (spec §3) */}
+      {/* 176px at −6% tracking — a quiet watermark */}
       <div className="footer__wordmark" aria-hidden="true">MEXTROPIC</div>
     </footer>
   )

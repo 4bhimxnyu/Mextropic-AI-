@@ -1,31 +1,27 @@
 import { useState } from 'react'
-import { faqs } from '../data/site.js'
 
 const DEFAULT_OPEN = 0
 
 /** Hover opens that question; when nothing is hovered the default one returns.
- *  Click still latches, so touch and keyboard users are not left out — hover is
- *  an enhancement on top, never the only way in. */
-export default function Faq() {
+ *  Click still latches, so touch and keyboard users are not left out. */
+export default function Faq({ items }) {
   const [hovered, setHovered] = useState(null)
   const [pinned, setPinned] = useState(DEFAULT_OPEN)
-
-  // hover wins while it lasts, then it falls back to whatever is pinned
   const open = hovered !== null ? hovered : pinned
 
   return (
     <section className="section faq" id="faq">
       <div className="wrap split">
         <div className="section-head" style={{ marginBottom: 0, alignContent: 'start' }}>
-          <p className="eyebrow pill">Resources</p>
-          <h2 className="h1" style={{ marginTop: 16 }}>Common questions.</h2>
+          <p className="eyebrow pill">FAQ</p>
+          <h2 className="h2" style={{ marginTop: 16 }}>Common questions.</h2>
           <p className="body" style={{ maxWidth: 380 }}>
             Anything unanswered here goes straight to a scientist, not a sales inbox.
           </p>
         </div>
 
         <div className="faq__list" onMouseLeave={() => setHovered(null)}>
-          {faqs.map((f, i) => {
+          {items.map((f, i) => {
             const isOpen = open === i
             return (
               <div

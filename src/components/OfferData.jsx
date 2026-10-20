@@ -1,45 +1,59 @@
 import { useState } from 'react'
-import { domains } from '../data/site.js'
+import { offerData } from '../data/site.js'
 import { useMediaQuery, COMPACT } from '../hooks/useMediaQuery.js'
+import { useInView } from '../hooks/useInView.js'
+import { Arrow } from './Nav.jsx'
 
-/** Desktop: two marquee rows scrolling in opposite directions. The Figma file
- *  duplicates each row's cards (" copy") - that duplication IS the loop
- *  mechanism, so one full set can translate out while its copy takes its place.
+/** Path A, "What we offer — paired modalities" (561:330). The iteration-5 card
+ *  rail came back by request: two marquee rows in opposite directions, grip,
+ *  ADD TO CAMPAIGN. Row 0 is modalities, row 1 paired experiment designs.
  *
- *  Compact: a plain list. A horizontally scrolling marquee on a phone fights the
- *  page's own vertical scroll and hides most of the catalogue off-screen, so the
- *  12 domains become 12 readable rows instead. */
-export default function Domains({ onAdd, picked = [] }) {
+ *  Compact: a plain list. A horizontal marquee on a phone fights the page's
+ *  own scroll and hides most of the catalogue off-screen. */
+export default function OfferData({ onAdd, picked = [], onForm }) {
   const compact = useMediaQuery(COMPACT)
+  const [ref, inView] = useInView({ threshold: 0.2 })
 
   return (
-    <section className="section domains" id="offer">
+    <section className="section offer offer--data" id="offer">
       <div className="wrap">
-        <div className="section-head">
-          <p className="eyebrow pill">Assay catalogue</p>
-          <h2 className="h1" style={{ marginTop: 16 }}>What we offer.</h2>
-          <p className="lead" style={{ maxWidth: 560 }}>
-            79 assays across 14 scientific domains - configured as one campaign, returned as one schema.
-          </p>
+        <div className="split-head" ref={ref}>
+          <div className={'reveal' + (inView ? ' is-in' : '')}>
+            <p className="eyebrow pill">{offerData.label}</p>
+            <h2 className="h1" style={{ marginTop: 16, maxWidth: 560 }}>{offerData.title}</h2>
+          </div>
+          <div className={'split-head__right reveal' + (inView ? ' is-in' : '')} style={{ '--d': '120ms' }}>
+            {offerData.intro.map((p) => <p className="lead lead--lg" key={p}>{p}</p>)}
+          </div>
         </div>
       </div>
 
       {compact
-        ? <DomainList onAdd={onAdd} picked={picked} />
-        : <DomainMarquee onAdd={onAdd} picked={picked} />}
+        ? <CardList onAdd={onAdd} picked={picked} />
+        : <CardMarquee onAdd={onAdd} picked={picked} />}
+
+      <div className="wrap">
+        <div className="bespoke">
+          <div>
+            <p className="eyebrow bespoke__label">{offerData.bespoke.label}</p>
+            <h3 className="h2 bespoke__title">{offerData.bespoke.title}</h3>
+          </div>
+          <a className="btn btn--primary" href="#enquiry" onClick={(e) => { e.preventDefault(); onForm() }}>
+            {offerData.bespoke.cta} <Arrow />
+          </a>
+        </div>
+      </div>
     </section>
   )
 }
 
-/* Twelve rows is a long scroll on a phone, so only the first five show until
-   asked for. This component only ever renders in compact mode, so the control
-   cannot appear on desktop. */
 const PREVIEW = 5
 
-function DomainList({ onAdd, picked }) {
+function CardList({ onAdd, picked }) {
   const [expanded, setExpanded] = useState(false)
-  const shown = expanded ? domains : domains.slice(0, PREVIEW)
-  const rest = domains.length - PREVIEW
+  const all = offerData.cards
+  const shown = expanded ? all : all.slice(0, PREVIEW)
+  const rest = all.length - PREVIEW
 
   return (
     <div className="wrap">
@@ -69,23 +83,19 @@ function DomainList({ onAdd, picked }) {
         aria-expanded={expanded}
         onClick={() => setExpanded((v) => !v)}
       >
-        {expanded ? 'Show fewer' : 'See all ' + domains.length + ' domains'}
+        {expanded ? 'Show fewer' : 'See all ' + all.length + ' modalities'}
         <span className="dlist__chev" aria-hidden="true" />
       </button>
-      {!expanded && (
-        <p className="caption" style={{ marginTop: 10 }}>
-          {rest} more domains
-        </p>
-      )}
+      {!expanded && <p className="caption" style={{ marginTop: 10 }}>{rest} more</p>}
     </div>
   )
 }
 
-function DomainMarquee({ onAdd, picked }) {
-  const rows = [domains.filter((d) => d.row === 0), domains.filter((d) => d.row === 1)]
+function CardMarquee({ onAdd, picked }) {
+  const rows = [offerData.cards.filter((d) => d.row === 0), offerData.cards.filter((d) => d.row === 1)]
 
   return (
-    <>
+    <div className="rail">
       {rows.map((row, r) => (
         <div className="marquee" key={r}>
           <div className={'marquee__track' + (r === 1 ? ' marquee__track--rev' : '')}>
@@ -115,6 +125,6 @@ function DomainMarquee({ onAdd, picked }) {
           </div>
         </div>
       ))}
-    </>
+    </div>
   )
 }

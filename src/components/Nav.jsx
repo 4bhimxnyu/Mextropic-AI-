@@ -2,13 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import Logo from './Logo.jsx'
 import { nav } from '../data/site.js'
 
-/** DESIGN-SPEC.md 6.5 - transparent until 24px of scroll, then fill + hairline +
- *  shadow. The wrapper must not clip: a clipping parent silently caps a child's
- *  shadow.
+/** Transparent until 24px of scroll, then fill + hairline + shadow. The wrapper
+ *  must not clip: a clipping parent silently caps a child's shadow.
  *
- *  Below the desktop breakpoint the links collapse behind a toggle next to the
- *  CTA, so the full menu is still reachable on a phone. */
-export default function Nav() {
+ *  "Multiomics Data" and "Discovery to IND" deep-link to the two path states;
+ *  the hrefs are real so the links work without JS and in a new tab. */
+export default function Nav({ path, onChoose, onForm }) {
   const [solid, setSolid] = useState(false)
   const [open, setOpen] = useState(false)
   const ticking = useRef(false)
@@ -24,8 +23,6 @@ export default function Nav() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // close on Escape, on outside click, and whenever the viewport grows enough
-  // that the links are shown inline again - otherwise the panel lingers invisibly
   useEffect(() => {
     if (!open) return
     const onKey = (e) => { if (e.key === 'Escape') setOpen(false) }
@@ -42,21 +39,40 @@ export default function Nav() {
     }
   }, [open])
 
+  const link = (l, extra = {}) => {
+    if (l.path) {
+      return (
+        <a
+          key={l.label}
+          href={'?path=' + l.path}
+          aria-current={path === l.path ? 'page' : undefined}
+          className={path === l.path ? 'is-current' : undefined}
+          onClick={(e) => { e.preventDefault(); setOpen(false); onChoose(l.path) }}
+          {...extra}
+        >{l.label}</a>
+      )
+    }
+    return <a key={l.label} href={l.href} onClick={() => setOpen(false)} {...extra}>{l.label}</a>
+  }
+
+  const form = (e) => { e.preventDefault(); setOpen(false); onForm() }
+
   return (
     <header className={'nav' + (solid || open ? ' nav--solid' : '')}>
       <div className="nav__bar" ref={panel}>
         <a className="nav__brand" href="#top"><Logo /> Mextropic</a>
 
         <nav className="nav__links" aria-label="Primary">
-          {nav.map((l) => <a key={l.label} href={l.href}>{l.label}</a>)}
+          {nav.map((l) => link(l))}
         </nav>
 
         <span className="nav__spacer" />
 
-        <a className="btn btn--ghost nav__cta" href="#enquiry">Book a call</a>
-        <a className="btn btn--primary nav__primary" href="#enquiry">
+        <a className="btn btn--ghost nav__cta" href="#enquiry" onClick={form}>Book a call</a>
+        <a className="btn btn--primary nav__primary" href="#enquiry" onClick={form}>
           <span className="nav__long">Scope your experiment</span>
           <span className="nav__short">Get a quote</span>
+          <Arrow />
         </a>
 
         <button
@@ -72,13 +88,19 @@ export default function Nav() {
 
         <div className={'nav__panel' + (open ? ' is-open' : '')} id="nav-panel">
           <div className="nav__panel-inner">
-            {nav.map((l) => (
-              <a key={l.label} href={l.href} onClick={() => setOpen(false)}>{l.label}</a>
-            ))}
-            <a className="nav__panel-cta" href="#enquiry" onClick={() => setOpen(false)}>Book a call</a>
+            {nav.map((l) => link(l))}
+            <a className="nav__panel-cta" href="#enquiry" onClick={form}>Book a call</a>
           </div>
         </div>
       </div>
     </header>
+  )
+}
+
+export function Arrow({ size = 12 }) {
+  return (
+    <svg className="arrow" width={size} height={size} viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path d="M1.5 6h9M6.5 2l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }

@@ -1,17 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { hero } from '../data/site.js'
 import { useReducedMotion } from '../hooks/useReducedMotion.js'
+import { Arrow } from './Nav.jsx'
 
-/** DESIGN-SPEC.md 6.1 - Blender lab loop, ping-pong, continuous.
- *
- *  The asset is the 6s render plus its own reverse concatenated (11.97s / 718 frames),
- *  so `loop` alone gives a seamless to-and-fro. Reversing in JS by stepping currentTime
- *  backwards means a seek per frame and judders badly at 1718x770/60fps; baking the
- *  reverse into the file lets the decoder play it natively. The duplicate frames at both
- *  turnarounds are dropped in the encode, so neither the hand-over nor the loop stutters.
- *
- *  MP4 before WebM: Safari can pass canPlayType for WebM and still fail to decode. */
-export default function Hero() {
+/** The lab loop stays until the VIT lab footage arrives (Figma badge
+ *  "VIDEO · VIT LAB FOOTAGE PENDING"). Same ping-pong asset as v2: the render
+ *  plus its own reverse baked into one file, so `loop` alone is seamless.
+ *  MP4 before WebM — Safari can pass canPlayType for WebM and still fail. */
+export default function Hero({ onForm }) {
   const video = useRef(null)
   const [paused, setPaused] = useState(false)
   const reduced = useReducedMotion()
@@ -20,9 +16,7 @@ export default function Hero() {
     const v = video.current
     if (!v) return
     if (reduced) { v.pause(); setPaused(true); return }
-    const t = setTimeout(() => {           // start within 0.5s of load
-      v.play().catch(() => {})             // autoplay can be refused; poster stands in
-    }, 400)
+    const t = setTimeout(() => { v.play().catch(() => {}) }, 400)
     return () => clearTimeout(t)
   }, [reduced])
 
@@ -35,22 +29,27 @@ export default function Hero() {
 
   return (
     <section className="section hero" id="top">
+      <div className="hero__grid" aria-hidden="true" />
       <div className="wrap">
         <div className="hero__copy">
-          <span className="hero__pill">
+          <span className="hero__pill rise" style={{ '--d': '0ms' }}>
             <b>{hero.pill.tag}</b>
             <span className="hero__pill-text">{hero.pill.text}</span>
           </span>
-          <p className="hero__terms">{hero.pill.terms}</p>
-          <h1 className="display">{hero.title}</h1>
-          <p className="lead hero__dek">{hero.dek}</p>
-          <div className="hero__actions">
-            <a className="btn btn--primary" href="#enquiry">{hero.primary} &rarr;</a>
-            <a className="btn btn--ghost" href="#how">{hero.secondary}</a>
+          <p className="hero__terms rise" style={{ '--d': '40ms' }}>{hero.pill.terms}</p>
+          <h1 className="display rise" style={{ '--d': '80ms' }}>
+            {hero.title[0]}<br />{hero.title[1]}
+          </h1>
+          <p className="lead hero__dek rise" style={{ '--d': '160ms' }}>{hero.dek}</p>
+          <div className="hero__actions rise" style={{ '--d': '240ms' }}>
+            <a className="btn btn--primary" href="#enquiry" onClick={(e) => { e.preventDefault(); onForm() }}>
+              {hero.primary} <Arrow />
+            </a>
+            <a className="btn btn--ghost" href="#explore">{hero.secondary}</a>
           </div>
         </div>
 
-        <div className="hero__visual">
+        <div className="hero__visual rise" style={{ '--d': '320ms' }}>
           <video
             ref={video}
             className="hero__video"

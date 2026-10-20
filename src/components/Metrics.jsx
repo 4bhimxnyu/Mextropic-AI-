@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
-import { metrics } from '../data/site.js'
 import { useInView } from '../hooks/useInView.js'
 import { useReducedMotion } from '../hooks/useReducedMotion.js'
 
-/** DESIGN-SPEC.md §6.3 — panel settles first (450ms), then the four columns rise 14px
- *  and fade in on a 90ms stagger, 500ms each, cubic-bezier(0.16, 1, 0.3, 1).
- *
- *  Section carries no top rule (§2): it belongs to the dashboard above it.
- *  Figures are text/primary, never accent — a metric is a heading, not a status (§2). */
-export default function Metrics() {
+/** Panel settles first (450ms), then the four columns rise 14px and fade in on a
+ *  90ms stagger, 500ms each, cubic-bezier(0.16, 1, 0.3, 1). The internal note
+ *  lines from iteration 5 are gone — the number and one caption only. */
+export default function Metrics({ items }) {
   const [ref, inView] = useInView({ threshold: 0.3 })
 
   return (
@@ -16,7 +13,7 @@ export default function Metrics() {
       <div className="wrap">
         <div ref={ref} className={'metrics__panel' + (inView ? ' is-in' : '')}>
           <div className="metrics__grid">
-            {metrics.map((m, i) => (
+            {items.map((m, i) => (
               <div
                 key={m.label}
                 className={'metric' + (inView ? ' is-in' : '')}
@@ -26,7 +23,6 @@ export default function Metrics() {
                   <CountUp value={m.fig} run={inView} delay={120 + i * 90} />
                 </div>
                 <p className="metric__label">{m.label}</p>
-                <p className="caption metric__note">{m.note}</p>
               </div>
             ))}
           </div>
@@ -36,9 +32,8 @@ export default function Metrics() {
   )
 }
 
-/** The count-up Figma cannot do: keyframes interpolate properties, not text (§6.3).
- *  Splits a label like "3–4 wks" into its leading number and its suffix, animates the
- *  number, and leaves everything else alone. */
+/** Splits a label like "3–4 wks" into its leading number and suffix, animates
+ *  the number, leaves everything else alone. */
 function CountUp({ value, run, delay = 0, duration = 900 }) {
   const reduced = useReducedMotion()
   const match = /^(\d+)(.*)$/s.exec(value)

@@ -1,74 +1,81 @@
 import { useState } from 'react'
-import { contact } from '../data/site.js'
+import { enquiry, contact } from '../data/site.js'
+import { Arrow } from './Nav.jsx'
 
-export default function Enquiry({ picked = [], onRemove }) {
+/** The lead form, with field labels that follow the chosen path (Figma
+ *  "Final CTA" 561:927 / 556:1222). No endpoint exists yet, so a submission
+ *  opens the visitor's email client with the answers addressed to the founders
+ *  rather than pretending it went somewhere. */
+export default function Enquiry({ variant = 'none', picked = [], onRemove }) {
+  const v = enquiry[variant] || enquiry.none
   const [sent, setSent] = useState(false)
 
   const onSubmit = (e) => {
     e.preventDefault()
-    // No endpoint is wired yet — see DESIGN-SPEC.md §8. This acknowledges locally
-    // rather than pretending a submission succeeded.
+    const f = new FormData(e.currentTarget)
+    const lines = [
+      'Name: ' + (f.get('name') || ''),
+      'Email: ' + (f.get('email') || ''),
+      'Organisation: ' + (f.get('org') || ''),
+      v.typeLabel + ': ' + (f.get('type') || ''),
+      picked.length ? 'Selected: ' + picked.join(', ') : null,
+      'Objective: ' + (f.get('objective') || ''),
+      v.readoutsLabel + ': ' + (f.get('readouts') || ''),
+      'Timeline: ' + (f.get('timeline') || ''),
+    ].filter(Boolean)
+    const subject = 'Enquiry via mextropic.com' + (variant !== 'none' ? ' (' + (variant === 'data' ? 'multiomics data' : 'discovery to IND') + ')' : '')
+    window.location.href = 'mailto:' + contact.join(',') +
+      '?subject=' + encodeURIComponent(subject) +
+      '&body=' + encodeURIComponent(lines.join('\n'))
     setSent(true)
   }
 
   return (
     <section className="section section--tight-top cta" id="enquiry">
       <div className="wrap">
-        <div className="section-head" style={{ justifyItems: 'center', textAlign: 'center' }}>
-          <p className="eyebrow">Get in touch</p>
-          <h2 className="h1">Let&rsquo;s scope your first experiment.</h2>
-          <p className="lead" style={{ maxWidth: 640 }}>
-            Share the hypothesis, the data you need and your timeline. We define a focused pilot
-            — assays, controls, deliverables, timeline and pricing — and deliver your first batch free.
-          </p>
+        <div className="section-head section-head--centre">
+          <p className="eyebrow pill">Get in touch</p>
+          <h2 className="h1">{v.title}</h2>
+          <p className="lead" style={{ maxWidth: 640 }}>{enquiry.dek}</p>
         </div>
 
         <form className="form" onSubmit={onSubmit}>
           <div className="form__row form__row--2">
             <label className="field">
               <span className="eyebrow">Full name</span>
-              <input name="name" placeholder="Dr Jane Okafor" required />
+              <input name="name" placeholder="Dr Jane Okafor" required autoComplete="name" />
             </label>
             <label className="field">
               <span className="eyebrow">Work email</span>
-              <input name="email" type="email" placeholder="jane@institution.org" required />
+              <input name="email" type="email" placeholder="jane@institution.org" required autoComplete="email" />
             </label>
           </div>
 
           <div className="form__row form__row--2">
             <label className="field">
               <span className="eyebrow">Company / institution</span>
-              <input name="org" placeholder="Institution or company" />
+              <input name="org" placeholder="Institution or company" autoComplete="organization" />
             </label>
             <label className="field">
-              <span className="eyebrow">Experiment type / target</span>
+              <span className="eyebrow">{v.typeLabel}</span>
               <select name="type" defaultValue="">
-                <option value="" disabled>Antibody engineering · Small molecule · Genomics</option>
-                <option>Antibody engineering</option>
-                <option>Small molecule</option>
-                <option>Genomics</option>
-                <option>Other</option>
+                <option value="" disabled>{v.typeHint}</option>
+                {v.types.map((t) => <option key={t}>{t}</option>)}
               </select>
             </label>
           </div>
 
           {picked.length > 0 && (
             <div className="field">
-              <span className="eyebrow">Selected assay domains</span>
+              <span className="eyebrow">Selected modalities</span>
               <ul className="chips">
                 {picked.map((name) => (
                   <li className="chip" key={name}>
                     {name}
-                    <button
-                      type="button"
-                      aria-label={'Remove ' + name}
-                      onClick={() => onRemove && onRemove(name)}
-                    >&times;</button>
+                    <button type="button" aria-label={'Remove ' + name} onClick={() => onRemove && onRemove(name)}>&times;</button>
                   </li>
                 ))}
               </ul>
-              {/* carried into the payload so the choice is not just decorative */}
-              <input type="hidden" name="domains" value={picked.join(', ')} />
             </div>
           )}
 
@@ -79,8 +86,8 @@ export default function Enquiry({ picked = [], onRemove }) {
 
           <div className="form__row form__row--2">
             <label className="field">
-              <span className="eyebrow">Desired data or readouts</span>
-              <input name="readouts" placeholder="IC50 curves, sequence-verified clones, RNA-seq counts…" />
+              <span className="eyebrow">{v.readoutsLabel}</span>
+              <input name="readouts" placeholder={v.readoutsHint} />
             </label>
             <label className="field">
               <span className="eyebrow">Target timeline</span>
@@ -90,23 +97,19 @@ export default function Enquiry({ picked = [], onRemove }) {
 
           <label className="consent">
             <input type="checkbox" name="consent" required />
-            <span>I agree to be contacted about this enquiry. Consent wording to be supplied by Mextropic.</span>
+            <span>{enquiry.consent}</span>
           </label>
 
           <div className="form__foot">
             <div>
-              <p className="eyebrow">A scientist reads every message</p>
-              <p className="small" style={{ marginTop: 4 }}>{contact.join(' · ')}</p>
+              <p className="eyebrow">{enquiry.note}</p>
+              <p className="small medium" style={{ marginTop: 4, color: 'var(--text-primary)' }}>{contact.join(' · ')}</p>
             </div>
             {sent
-              ? <span className="sent">Noted locally — no endpoint is connected yet.</span>
-              : <button className="btn btn--primary" type="submit">Send enquiry &rarr;</button>}
+              ? <span className="sent">Your email app should open with the details. If not, write to {contact[0]}.</span>
+              : <button className="btn btn--primary" type="submit">Send enquiry <Arrow /></button>}
           </div>
         </form>
-
-        <p className="caption" style={{ textAlign: 'center', marginTop: 24 }}>
-          Form submission workflow, privacy policy and consent language to be confirmed.
-        </p>
       </div>
     </section>
   )
