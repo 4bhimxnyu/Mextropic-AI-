@@ -309,7 +309,6 @@
 .card:hover .card__img { transform: scale(1.04); }
 .card__tint { position: absolute; inset: 0; background: rgba(28, 21, 18, 0.30); }
 .card__scrim { position: absolute; inset: auto 0 0; height: 140px; background: linear-gradient(to top, rgba(20,12,8,.88), rgba(20,12,8,0)); }
-.card__grip { position: absolute; top: 18px; left: 18px; width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,.16); }
 .card__body { position: relative; display: grid; gap: 12px; justify-items: start; }
 .card__title { font-size: 19px; letter-spacing: -0.01em; line-height: 1.25; font-weight: 500; margin: 0; }
 
@@ -645,6 +644,147 @@
   color: var(--border-default); text-align: center; user-select: none;
   margin-bottom: -0.16em; padding-top: 8px;
 }
+
+/* ---------------------------------------------------------------- compact layout
+   `data-layout` is set on <html> by useViewport from the measured viewport
+   (width < 760px, or a landscape window under 520px tall). `--vh` is the real
+   inner height. Everything here is "less, larger, single column". */
+html[data-layout="compact"] .section,
+html[data-layout="narrow"] .section { padding-block: 44px; }
+html[data-layout="compact"] .section-head,
+html[data-layout="narrow"] .section-head { margin-bottom: 24px; gap: 10px; }
+html[data-layout="compact"] .h1,
+html[data-layout="narrow"] .h1 { font-size: clamp(1.7rem, 7.6vw, 2.2rem); }
+html[data-layout="compact"] .display,
+html[data-layout="narrow"] .display { font-size: clamp(2rem, 9.2vw, 2.6rem); letter-spacing: -0.035em; }
+html[data-layout="compact"] .lead--lg,
+html[data-layout="narrow"] .lead--lg { font-size: 15px; }
+
+/* hero: shorter, and the poster cropped to a band */
+html[data-layout="compact"] .hero__copy,
+html[data-layout="narrow"] .hero__copy { padding-top: 92px; gap: 14px; }
+html[data-layout="compact"] .hero,
+html[data-layout="narrow"] .hero { padding-bottom: 36px; }
+html[data-layout="compact"] .hero__visual,
+html[data-layout="narrow"] .hero__visual { margin-top: 28px; }
+html[data-layout="compact"] .hero__video,
+html[data-layout="narrow"] .hero__video { aspect-ratio: 4 / 3; object-fit: cover; border-radius: 16px; }
+html[data-layout="compact"] .hero__dek,
+html[data-layout="narrow"] .hero__dek { font-size: 15px; }
+html[data-layout="compact"] .hero__grid,
+html[data-layout="narrow"] .hero__grid { display: none; }
+html[data-orientation="landscape"][data-layout="compact"] .hero__video { aspect-ratio: 21 / 9; }
+
+/* chooser: two tappable rows */
+.pcards--compact { gap: 12px; }
+.pcards--compact .pcard {
+  grid-template-columns: auto 1fr; grid-template-areas: 'icon title'; align-items: center;
+  gap: 14px; padding: 16px 16px 16px 14px; border-radius: 16px;
+}
+.pcards--compact .pcard__top { grid-area: icon; align-self: start; }
+.pcards--compact .pcard__icon { width: 40px; height: 40px; border-radius: 12px; }
+.pcards--compact .pcard__title { grid-area: title; font-size: 17px; letter-spacing: -0.02em; line-height: 1.3; padding-right: 28px; }
+.pcards--compact .pcard__go {
+  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+  color: var(--accent-primary); display: grid; place-items: center;
+}
+.pcards--compact .pcard:hover { transform: none; box-shadow: none; }
+.pcards--compact .pcard.is-dim { opacity: .72; }
+.pcard__cover { position: absolute; inset: 0; border-radius: inherit; }
+html[data-layout="compact"] .chooser__helper,
+html[data-layout="narrow"] .chooser__helper { margin-top: 28px; }
+
+/* path A: intro and list */
+html[data-layout="compact"] .split-head,
+html[data-layout="narrow"] .split-head { gap: 14px; margin-bottom: 24px; }
+html[data-layout="compact"] .bespoke,
+html[data-layout="narrow"] .bespoke { margin-top: 24px; padding: 20px; border-radius: 16px; gap: 14px; }
+html[data-layout="compact"] .bespoke__title,
+html[data-layout="narrow"] .bespoke__title { font-size: 20px; }
+
+/* path B: the pipeline as one swipeable strip, assays as chips */
+.pipeline--strip {
+  display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+  margin: 0 -24px 24px; padding: 2px 24px; scroll-snap-type: x proximity;
+}
+.pipeline--strip::-webkit-scrollbar { display: none; }
+.pipeline--strip .phase { flex: none; scroll-snap-align: start; padding: 9px 14px; font-size: 13px; }
+.pipeline--strip .phase__arrow { display: none; }
+html[data-layout="compact"] .tracks,
+html[data-layout="narrow"] .tracks { gap: 22px; }
+html[data-layout="compact"] .track,
+html[data-layout="narrow"] .track { gap: 14px; }
+html[data-layout="compact"] .tcard,
+html[data-layout="narrow"] .tcard { padding: 18px; border-radius: 16px; gap: 10px; }
+html[data-layout="compact"] .tcard__title,
+html[data-layout="narrow"] .tcard__title { font-size: 20px; }
+.assay-cloud { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.assay-chip {
+  font-size: 13px; padding: 7px 12px; border-radius: 999px;
+  background: var(--surface-soft); border: 1px solid var(--border-default);
+  opacity: 0; transform: translateY(6px);
+  transition: opacity .45s var(--ease-out), transform .45s var(--ease-out); transition-delay: var(--d, 0ms);
+}
+.track.is-in .assay-chip { opacity: 1; transform: none; }
+html[data-layout="compact"] .tcard__foot,
+html[data-layout="narrow"] .tcard__foot { margin-top: 6px; }
+
+/* value prop: vertical stepper */
+.stepper { list-style: none; margin: 0; padding: 0; display: grid; }
+.stepper__item {
+  display: grid; grid-template-columns: 28px 1fr; gap: 14px; align-items: start;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity .5s var(--ease-out), transform .5s var(--ease-out); transition-delay: var(--d, 0ms);
+}
+.stepper.is-in .stepper__item { opacity: 1; transform: none; }
+.stepper__n {
+  width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center;
+  background: var(--accent-graphic); color: #fff; font-family: var(--font-mono); font-size: 11px;
+  position: relative; z-index: 1;
+}
+.stepper__body { display: grid; gap: 4px; padding-bottom: 22px; position: relative; }
+.stepper__item:not(:last-child) .stepper__body::before {
+  content: ''; position: absolute; left: -28px; top: 28px; bottom: 0; width: 1px; background: var(--border-strong);
+}
+.stepper__t { font-size: 17px; letter-spacing: -0.02em; line-height: 1.3; font-weight: 500; margin: 0; }
+.stepper__time { color: var(--accent-deep); margin-top: 6px; font-size: 10px; }
+
+/* dashboard and metrics */
+html[data-layout="compact"] .metrics__grid,
+html[data-layout="narrow"] .metrics__grid { gap: 14px 18px; }
+html[data-layout="compact"] .panel__main,
+html[data-layout="narrow"] .panel__main { padding: 12px; gap: 12px; }
+
+/* form */
+.form__more {
+  align-self: end; justify-self: start; cursor: pointer;
+  font: inherit; font-size: 14px; font-weight: 500; color: var(--accent-primary);
+  background: none; border: 0; padding: 12px 0;
+}
+html[data-layout="compact"] .form,
+html[data-layout="narrow"] .form { padding: 20px; border-radius: 16px; gap: 16px; }
+html[data-layout="compact"] .form__row,
+html[data-layout="narrow"] .form__row { gap: 16px; }
+
+/* faq */
+html[data-layout="compact"] .faq__q,
+html[data-layout="narrow"] .faq__q { font-size: 16px; padding: 16px 0; }
+html[data-layout="compact"] .faq__a p,
+html[data-layout="narrow"] .faq__a p { padding-bottom: 16px; }
+
+/* footer */
+.footer__inline { display: flex; flex-wrap: wrap; gap: 10px 20px; }
+.footer__inline a { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+html[data-layout="compact"] .footer__top,
+html[data-layout="narrow"] .footer__top { gap: 28px; padding-block: 44px 32px; }
+html[data-layout="compact"] .footer,
+html[data-layout="narrow"] .footer { border-radius: 20px 20px 0 0; }
+html[data-layout="compact"] .footer__wordmark,
+html[data-layout="narrow"] .footer__wordmark { font-size: 20vw; }
+
+/* short landscape phones: the hero must not take two screens */
+html[data-orientation="landscape"][data-layout="compact"] .hero__copy { padding-top: 84px; }
+html[data-orientation="landscape"][data-layout="compact"] .pcards--compact { grid-template-columns: 1fr 1fr; }
 
 /* ---------------------------------------------------------------- reveal */
 .reveal { opacity: 0; transform: translateY(var(--rise)); transition: opacity var(--reveal-dur) var(--ease-out), transform var(--reveal-dur) var(--ease-out); transition-delay: var(--d, 0ms); }

@@ -1,9 +1,12 @@
 import Logo from './Logo.jsx'
 import { footerCols, contact } from '../data/site.js'
+import { useViewport } from '../hooks/useViewport.js'
 
-/** Always renders, path or no path. Brand · Explore · Legal; the Blog column is
- *  gone with the Blog section (founders' round-5 feedback). */
+/** Always renders, path or no path. Brand · Explore · Legal.
+ *  Compact: brand and contact, then every link in one wrapping row. */
 export default function Footer({ onChoose, onForm }) {
+  const { compact } = useViewport()
+
   const link = (l) => {
     if (l.path) {
       return <a key={l.label} href={'?path=' + l.path} onClick={(e) => { e.preventDefault(); onChoose(l.path) }}>{l.label}</a>
@@ -30,21 +33,26 @@ export default function Footer({ onChoose, onForm }) {
             </p>
           </div>
 
-          {footerCols.map((col) => (
-            <nav className="footer__col" key={col.h} aria-label={col.h}>
-              <p className="eyebrow" style={{ color: 'var(--accent-primary)' }}>{col.h}</p>
-              {col.links.map(link)}
+          {compact ? (
+            <nav className="footer__inline" aria-label="Footer">
+              {footerCols.flatMap((col) => col.links).map(link)}
             </nav>
-          ))}
+          ) : (
+            footerCols.map((col) => (
+              <nav className="footer__col" key={col.h} aria-label={col.h}>
+                <p className="eyebrow" style={{ color: 'var(--accent-primary)' }}>{col.h}</p>
+                {col.links.map(link)}
+              </nav>
+            ))
+          )}
         </div>
 
         <div className="footer__bottom">
           <span>&copy; {new Date().getFullYear()} Mextropic. All rights reserved.</span>
-          <span>Built for research teams, not for slide decks.</span>
+          {!compact && <span>Built for research teams, not for slide decks.</span>}
         </div>
       </div>
 
-      {/* 176px at −6% tracking — a quiet watermark */}
       <div className="footer__wordmark" aria-hidden="true">MEXTROPIC</div>
     </footer>
   )

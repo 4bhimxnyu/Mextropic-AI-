@@ -1,12 +1,18 @@
 import { dashboard } from '../data/site.js'
 import { useInView } from '../hooks/useInView.js'
+import { useViewport } from '../hooks/useViewport.js'
 
 const { campaign } = dashboard
 
-/** Path B only (brief: "dashboard only in biotech section"). Figma 556:1096 adds
- *  a sensorgram strip above the table — three binding curves that draw in. */
+/** Path B only. Figma 556:1096 adds a sensorgram strip above the table — three
+ *  binding curves that draw in.
+ *
+ *  Compact: KPIs and three result rows. The sidebar, chart and the two
+ *  rightmost columns are the parts a phone cannot show at a readable size. */
 export default function TrackItLive() {
   const [ref, inView] = useInView()
+  const { compact, narrow } = useViewport()
+  const rows = compact ? campaign.rows.slice(0, 3) : campaign.rows
 
   return (
     <section className="section section--tight-bottom track">
@@ -14,7 +20,7 @@ export default function TrackItLive() {
         <div className="section-head section-head--centre">
           <p className="eyebrow pill">{dashboard.label}</p>
           <h2 className="h2">{dashboard.title}</h2>
-          <p className="lead" style={{ maxWidth: 620 }}>{dashboard.dek}</p>
+          {!compact && <p className="lead" style={{ maxWidth: 620 }}>{dashboard.dek}</p>}
         </div>
 
         <div ref={ref} className={'panel reveal' + (inView ? ' is-in' : '')}>
@@ -22,19 +28,21 @@ export default function TrackItLive() {
             <span className="panel__dot" />
             <span className="panel__dot" />
             <span className="panel__dot" />
-            <span className="panel__title">{campaign.id}</span>
+            <span className="panel__title">{compact ? campaign.id.split(' · ')[0] : campaign.id}</span>
             <span className="panel__status"><i />Running</span>
           </div>
 
           <div className="panel__body">
-            <aside className="panel__side">
-              <p className="eyebrow" style={{ marginBottom: 8 }}>Campaign</p>
-              {campaign.nav.map((n) => (
-                <span key={n} className={'panel__nav' + (n === campaign.active ? ' is-on' : '')}>
-                  <i />{n}
-                </span>
-              ))}
-            </aside>
+            {!compact && (
+              <aside className="panel__side">
+                <p className="eyebrow" style={{ marginBottom: 8 }}>Campaign</p>
+                {campaign.nav.map((n) => (
+                  <span key={n} className={'panel__nav' + (n === campaign.active ? ' is-on' : '')}>
+                    <i />{n}
+                  </span>
+                ))}
+              </aside>
+            )}
 
             <div className="panel__main">
               <div className="kpis">
@@ -43,36 +51,42 @@ export default function TrackItLive() {
                 ))}
               </div>
 
-              <div className="chart">
-                <p className="small chart__title">{campaign.chart}</p>
-                <Sensorgram run={inView} />
-              </div>
+              {!compact && (
+                <div className="chart">
+                  <p className="small chart__title">{campaign.chart}</p>
+                  <Sensorgram run={inView} />
+                </div>
+              )}
 
               <table className="tbl">
                 <thead>
                   <tr>
-                    <th>Design ID</th><th>Assay</th><th>Value</th><th>Flag</th><th>Run</th>
+                    <th>Design ID</th><th>Assay</th><th>Value</th>
+                    {!narrow && <th>Flag</th>}
+                    {!compact && <th>Run</th>}
                   </tr>
                 </thead>
                 <tbody>
-                  {campaign.rows.map((r) => (
+                  {rows.map((r) => (
                     <tr key={r.id}>
                       <td className="mono">{r.id}</td>
                       <td>{r.assay}</td>
                       <td className="mono">{r.value}</td>
-                      <td>{r.flag ? <span className="flag">{r.flag}</span> : ''}</td>
-                      <td>
-                        <span
-                          className={'bar' + (r.run < 1 ? ' bar--mute' : '')}
-                          style={{ display: 'block', width: Math.round(r.run * 54) + 'px' }}
-                        />
-                      </td>
+                      {!narrow && <td>{r.flag ? <span className="flag">{r.flag}</span> : ''}</td>}
+                      {!compact && (
+                        <td>
+                          <span
+                            className={'bar' + (r.run < 1 ? ' bar--mute' : '')}
+                            style={{ display: 'block', width: Math.round(r.run * 54) + 'px' }}
+                          />
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
               </table>
 
-              <p className="caption">Figures shown are illustrative, not a live campaign.</p>
+              {!compact && <p className="caption">Figures shown are illustrative, not a live campaign.</p>}
             </div>
           </div>
         </div>

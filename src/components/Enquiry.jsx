@@ -1,14 +1,20 @@
 import { useState } from 'react'
 import { enquiry, contact } from '../data/site.js'
+import { useViewport } from '../hooks/useViewport.js'
 import { Arrow } from './Nav.jsx'
 
 /** The lead form, with field labels that follow the chosen path (Figma
  *  "Final CTA" 561:927 / 556:1222). No endpoint exists yet, so a submission
- *  opens the visitor's email client with the answers addressed to the founders
- *  rather than pretending it went somewhere. */
+ *  opens the visitor's email client with the answers addressed to the founders.
+ *
+ *  Compact: four fields. Objective and readouts sit behind "Add details" so the
+ *  form fits a phone screen and still gets sent. */
 export default function Enquiry({ variant = 'none', picked = [], onRemove }) {
   const v = enquiry[variant] || enquiry.none
+  const { compact } = useViewport()
   const [sent, setSent] = useState(false)
+  const [more, setMore] = useState(false)
+  const showDetails = !compact || more
 
   const onSubmit = (e) => {
     e.preventDefault()
@@ -19,8 +25,8 @@ export default function Enquiry({ variant = 'none', picked = [], onRemove }) {
       'Organisation: ' + (f.get('org') || ''),
       v.typeLabel + ': ' + (f.get('type') || ''),
       picked.length ? 'Selected: ' + picked.join(', ') : null,
-      'Objective: ' + (f.get('objective') || ''),
-      v.readoutsLabel + ': ' + (f.get('readouts') || ''),
+      f.get('objective') ? 'Objective: ' + f.get('objective') : null,
+      f.get('readouts') ? v.readoutsLabel + ': ' + f.get('readouts') : null,
       'Timeline: ' + (f.get('timeline') || ''),
     ].filter(Boolean)
     const subject = 'Enquiry via mextropic.com' + (variant !== 'none' ? ' (' + (variant === 'data' ? 'multiomics data' : 'discovery to IND') + ')' : '')
@@ -36,7 +42,7 @@ export default function Enquiry({ variant = 'none', picked = [], onRemove }) {
         <div className="section-head section-head--centre">
           <p className="eyebrow pill">Get in touch</p>
           <h2 className="h1">{v.title}</h2>
-          <p className="lead" style={{ maxWidth: 640 }}>{enquiry.dek}</p>
+          {!compact && <p className="lead" style={{ maxWidth: 640 }}>{enquiry.dek}</p>}
         </div>
 
         <form className="form" onSubmit={onSubmit}>
@@ -79,21 +85,35 @@ export default function Enquiry({ variant = 'none', picked = [], onRemove }) {
             </div>
           )}
 
-          <label className="field">
-            <span className="eyebrow">Research objective or hypothesis</span>
-            <textarea name="objective" placeholder="What you want to test, and why it matters now." />
-          </label>
-
-          <div className="form__row form__row--2">
-            <label className="field">
-              <span className="eyebrow">{v.readoutsLabel}</span>
-              <input name="readouts" placeholder={v.readoutsHint} />
-            </label>
-            <label className="field">
-              <span className="eyebrow">Target timeline</span>
-              <input name="timeline" placeholder="Within 4 weeks" />
-            </label>
-          </div>
+          {showDetails && (
+            <>
+              <label className="field">
+                <span className="eyebrow">Research objective or hypothesis</span>
+                <textarea name="objective" placeholder="What you want to test, and why it matters now." />
+              </label>
+              <div className="form__row form__row--2">
+                <label className="field">
+                  <span className="eyebrow">{v.readoutsLabel}</span>
+                  <input name="readouts" placeholder={v.readoutsHint} />
+                </label>
+                <label className="field">
+                  <span className="eyebrow">Target timeline</span>
+                  <input name="timeline" placeholder="Within 4 weeks" />
+                </label>
+              </div>
+            </>
+          )}
+          {!showDetails && (
+            <div className="form__row form__row--2">
+              <label className="field">
+                <span className="eyebrow">Target timeline</span>
+                <input name="timeline" placeholder="Within 4 weeks" />
+              </label>
+              <button type="button" className="form__more" onClick={() => setMore(true)}>
+                + Add details
+              </button>
+            </div>
+          )}
 
           <label className="consent">
             <input type="checkbox" name="consent" required />
@@ -103,7 +123,7 @@ export default function Enquiry({ variant = 'none', picked = [], onRemove }) {
           <div className="form__foot">
             <div>
               <p className="eyebrow">{enquiry.note}</p>
-              <p className="small medium" style={{ marginTop: 4, color: 'var(--text-primary)' }}>{contact.join(' · ')}</p>
+              {!compact && <p className="small medium" style={{ marginTop: 4, color: 'var(--text-primary)' }}>{contact.join(' · ')}</p>}
             </div>
             {sent
               ? <span className="sent">Your email app should open with the details. If not, write to {contact[0]}.</span>

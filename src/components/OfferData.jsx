@@ -1,17 +1,18 @@
 import { useState } from 'react'
 import { offerData } from '../data/site.js'
-import { useMediaQuery, COMPACT } from '../hooks/useMediaQuery.js'
+import { useViewport } from '../hooks/useViewport.js'
 import { useInView } from '../hooks/useInView.js'
 import { Arrow } from './Nav.jsx'
 
 /** Path A, "What we offer — paired modalities" (561:330). The iteration-5 card
- *  rail came back by request: two marquee rows in opposite directions, grip,
- *  ADD TO CAMPAIGN. Row 0 is modalities, row 1 paired experiment designs.
+ *  rail: two marquee rows in opposite directions, ADD TO CAMPAIGN on each card.
+ *  Row 0 is modalities, row 1 paired experiment designs.
  *
- *  Compact: a plain list. A horizontal marquee on a phone fights the page's
+ *  Compact: one paragraph of intro, and the cards as a short list with the
+ *  rest behind "See all". A horizontal marquee on a phone fights the page's
  *  own scroll and hides most of the catalogue off-screen. */
 export default function OfferData({ onAdd, picked = [], onForm }) {
-  const compact = useMediaQuery(COMPACT)
+  const { compact } = useViewport()
   const [ref, inView] = useInView({ threshold: 0.2 })
 
   return (
@@ -23,7 +24,9 @@ export default function OfferData({ onAdd, picked = [], onForm }) {
             <h2 className="h1" style={{ marginTop: 16, maxWidth: 560 }}>{offerData.title}</h2>
           </div>
           <div className={'split-head__right reveal' + (inView ? ' is-in' : '')} style={{ '--d': '120ms' }}>
-            {offerData.intro.map((p) => <p className="lead lead--lg" key={p}>{p}</p>)}
+            {(compact ? offerData.intro.slice(0, 1) : offerData.intro).map((p) => (
+              <p className="lead lead--lg" key={p}>{p}</p>
+            ))}
           </div>
         </div>
       </div>
@@ -47,13 +50,12 @@ export default function OfferData({ onAdd, picked = [], onForm }) {
   )
 }
 
-const PREVIEW = 5
+const PREVIEW = 4
 
 function CardList({ onAdd, picked }) {
   const [expanded, setExpanded] = useState(false)
   const all = offerData.cards
   const shown = expanded ? all : all.slice(0, PREVIEW)
-  const rest = all.length - PREVIEW
 
   return (
     <div className="wrap">
@@ -83,10 +85,9 @@ function CardList({ onAdd, picked }) {
         aria-expanded={expanded}
         onClick={() => setExpanded((v) => !v)}
       >
-        {expanded ? 'Show fewer' : 'See all ' + all.length + ' modalities'}
+        {expanded ? 'Show fewer' : 'See all ' + all.length}
         <span className="dlist__chev" aria-hidden="true" />
       </button>
-      {!expanded && <p className="caption" style={{ marginTop: 10 }}>{rest} more</p>}
     </div>
   )
 }
@@ -106,7 +107,6 @@ function CardMarquee({ onAdd, picked }) {
                     <img className="card__img" src={d.img} alt="" loading="lazy" decoding="async" />
                     <span className="card__tint" />
                     <span className="card__scrim" />
-                    <span className="card__grip" />
                     <div className="card__body">
                       <h3 className="card__title">{d.t}</h3>
                       <a

@@ -1,13 +1,18 @@
 import { chooser, contact } from '../data/site.js'
 import { useInView } from '../hooks/useInView.js'
+import { useViewport } from '../hooks/useViewport.js'
 import { Arrow } from './Nav.jsx'
 
 /** Figma "Explore services" (561:3076). Both cards are identical in size, weight
  *  and colour; selection is the only state that changes — a 2px accent ring on
- *  the chosen card and 62% opacity on the other. No pill, no tag on the chosen
- *  card (founders' round-3 feedback). */
+ *  the chosen card and 62% opacity on the other.
+ *
+ *  Compact: the two cards become two tappable rows — icon, title, arrow. The
+ *  bullets are the first thing a phone does not need; the path content that
+ *  follows says the same things at full size. */
 export default function Chooser({ path, onChoose, onForm }) {
   const [ref, inView] = useInView({ threshold: 0.15 })
+  const { compact } = useViewport()
 
   return (
     <section className="section chooser" id="explore">
@@ -15,10 +20,10 @@ export default function Chooser({ path, onChoose, onForm }) {
         <div className="section-head section-head--centre">
           <p className="eyebrow pill">{chooser.label}</p>
           <h2 className="h1">{chooser.title}</h2>
-          <p className="lead lead--lg" style={{ maxWidth: 680 }}>{chooser.dek}</p>
+          {!compact && <p className="lead lead--lg" style={{ maxWidth: 680 }}>{chooser.dek}</p>}
         </div>
 
-        <div className="pcards" ref={ref}>
+        <div className={'pcards' + (compact ? ' pcards--compact' : '')} ref={ref}>
           {chooser.cards.map((c, i) => {
             const selected = path === c.path
             const dimmed = path && !selected
@@ -37,24 +42,39 @@ export default function Chooser({ path, onChoose, onForm }) {
               >
                 <div className="pcard__top">
                   <span className="pcard__icon" aria-hidden="true"><Icon kind={c.icon} /></span>
-                  {!selected && <span className="eyebrow">Path {c.n}</span>}
+                  {!selected && !compact && <span className="eyebrow">Path {c.n}</span>}
+                  {compact && (
+                    <span className="pcard__go" aria-hidden="true">
+                      {selected ? <Check /> : <Arrow size={14} />}
+                    </span>
+                  )}
                 </div>
                 <h3 className="pcard__title">{c.title}</h3>
-                <span className="pcard__rule" />
-                <ul className="pcard__list">
-                  {c.bullets.map((b) => (
-                    <li key={b}><Check />{b}</li>
-                  ))}
-                </ul>
-                <div className="pcard__cta">
+                {!compact && (
+                  <>
+                    <span className="pcard__rule" />
+                    <ul className="pcard__list">
+                      {c.bullets.map((b) => <li key={b}><Check />{b}</li>)}
+                    </ul>
+                    <div className="pcard__cta">
+                      <a
+                        className="btn btn--primary"
+                        href={'?path=' + c.path}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onChoose(c.path) }}
+                      >
+                        {chooser.cta} <Arrow />
+                      </a>
+                    </div>
+                  </>
+                )}
+                {compact && (
                   <a
-                    className="btn btn--primary"
+                    className="pcard__cover"
                     href={'?path=' + c.path}
+                    aria-label={chooser.cta + ': ' + c.title}
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onChoose(c.path) }}
-                  >
-                    {chooser.cta} <Arrow />
-                  </a>
-                </div>
+                  />
+                )}
               </article>
             )
           })}
