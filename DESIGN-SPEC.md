@@ -17,7 +17,7 @@ it), renders the path block with a 600ms rise, and scrolls to `#offer`. The nav 
 |---|---|
 | none | (nothing) — but a CTA press reveals the lead form alone, since the design gives the form no home on the entry state |
 | data | What we offer (card rail + bespoke card) → Metrics → Clients (testimonials only) → Lead form → FAQ |
-| ind | What we offer (pipeline + two track cards) → Why Mextropic (flowchart) → Metrics → Dashboard → Clients (logo slots + testimonials) → Lead form → FAQ |
+| ind | What we offer (pipeline + two track cards) → Why Mextropic (flowchart) → Metrics → Dashboard → Clients (testimonials only) → Lead form → FAQ |
 
 ## Colour
 
@@ -53,7 +53,7 @@ Headings are Geist Medium (500) at the iteration-6 sizes (60 / 46 / 30 / 28); th
 ## Content status
 
 - Hero video: the v2 lab loop stands in until the VIT lab footage arrives.
-- Client logos (Path B) and both testimonials are dashed placeholders.
+- Both testimonials are dashed placeholders. Client logo rows were removed from both paths (20 Oct) and return once clients are confirmed.
 - FAQ: only the first answer exists in Figma; the other three are build copy to be approved.
 - Lead form has no endpoint; submit opens a `mailto:` to both founders with the answers.
 - "Talk to our team" on the entry state is a `mailto:`; once a path is chosen it scrolls to the form.
